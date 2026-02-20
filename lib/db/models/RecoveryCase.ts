@@ -17,7 +17,12 @@ export interface IRecoveryCase extends Document {
   recoveredAmount?: number;
   recoveredAt?: Date;
   portalUrl?: string;
+  recoveryToken?: string;
   currentStep: number;
+  // Smart retry fields
+  smartRetryScheduledFor?: Date;
+  smartRetryAttempted: boolean;
+  smartRetryResult?: "succeeded" | "failed" | "skipped";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,7 +39,20 @@ const RecoveryCaseSchema = new Schema<IRecoveryCase>(
     currency: { type: String, required: true, default: "usd" },
     failureType: {
       type: String,
-      enum: ["HARD_DECLINE", "INSUFFICIENT_FUNDS", "EXPIRED_CARD", "GENERIC"],
+      enum: [
+        // New granular types
+        "HARD_DECLINE_STOLEN",
+        "HARD_DECLINE_FRAUD",
+        "HARD_DECLINE_BLOCKED",
+        "AUTHENTICATION_REQUIRED",
+        "INSUFFICIENT_FUNDS",
+        "EXPIRED_CARD",
+        "DO_NOT_HONOR",
+        "INCORRECT_DATA",
+        "GENERIC",
+        // Legacy backward compat
+        "HARD_DECLINE",
+      ],
       required: true,
     },
     declineCode: { type: String },
@@ -47,7 +65,12 @@ const RecoveryCaseSchema = new Schema<IRecoveryCase>(
     recoveredAmount: { type: Number },
     recoveredAt: { type: Date },
     portalUrl: { type: String },
+    recoveryToken: { type: String },
     currentStep: { type: Number, default: 0 },
+    // Smart retry
+    smartRetryScheduledFor: { type: Date },
+    smartRetryAttempted: { type: Boolean, default: false },
+    smartRetryResult: { type: String, enum: ["succeeded", "failed", "skipped"] },
   },
   { timestamps: true }
 );

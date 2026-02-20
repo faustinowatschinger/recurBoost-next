@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { getStripe } from "@/lib/stripe/client";
+import { getStripeLegacy } from "@/lib/stripe/client";
 import { connectDB } from "@/lib/db/connection";
 import { StripeAccount } from "@/lib/db/models";
 
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await getStripe().oauth.token({
+    const response = await getStripeLegacy().oauth.token({
       grant_type: "authorization_code",
       code,
     });
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
 
     // Register webhooks for the connected account
     try {
-      const webhookEndpoint = await getStripe().webhookEndpoints.create({
+      const webhookEndpoint = await getStripeLegacy().webhookEndpoints.create({
         url: `${process.env.NEXTAUTH_URL}/api/stripe/webhooks`,
         enabled_events: [
           "invoice.payment_failed",

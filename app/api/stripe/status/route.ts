@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/connection";
-import { StripeAccount } from "@/lib/db/models";
+import { PaymentIntegration } from "@/lib/db/models";
 import { mockStripeStatus } from "@/lib/mock-data";
 
 export async function GET() {
@@ -16,11 +16,19 @@ export async function GET() {
 
   await connectDB();
 
-  const account = await StripeAccount.findOne({ userId: session.user.id });
+  const integration = await PaymentIntegration.findOne({
+    userId: session.user.id,
+    status: "active",
+  });
 
   return NextResponse.json({
-    connected: !!account,
-    baselineCalculated: !!account?.baselineRecoveryRate,
-    stripeAccountId: account?.stripeAccountId || null,
+    connected: !!integration,
+    // Fix: use != null so baseline of 0 is still considered "calculated"
+    baselineCalculated: integration?.baselineRecoveryRate != null,
+    stripeAccountId: integration?.stripeAccountId || null,
+    apiKeyLast4: integration?.apiKeyLast4 || null,
+    baselineRecoveryRate: integration?.baselineRecoveryRate ?? null,
+    baselineCalculatedAt: integration?.baselineCalculatedAt || null,
+    webhookConfigured: !!integration?.webhookSecretEncrypted,
   });
 }

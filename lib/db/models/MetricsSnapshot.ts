@@ -9,6 +9,13 @@ export interface IMetricsSnapshot extends Document {
   totalFailed: number;
   totalRecovered: number;
   date: Date;
+  // Granular metrics
+  openRateByType?: Record<string, number>;
+  ctrByType?: Record<string, number>;
+  recoveryByStep?: Record<string, number>;
+  naturalRecoveryCount?: number;
+  emailAssistedRecoveryCount?: number;
+  avgRecoveryTimeByType?: Record<string, number>;
 }
 
 const MetricsSnapshotSchema = new Schema<IMetricsSnapshot>({
@@ -20,6 +27,13 @@ const MetricsSnapshotSchema = new Schema<IMetricsSnapshot>({
   totalFailed: { type: Number, default: 0 },
   totalRecovered: { type: Number, default: 0 },
   date: { type: Date, default: Date.now, index: true },
+  // Granular
+  openRateByType: { type: Schema.Types.Mixed },
+  ctrByType: { type: Schema.Types.Mixed },
+  recoveryByStep: { type: Schema.Types.Mixed },
+  naturalRecoveryCount: { type: Number },
+  emailAssistedRecoveryCount: { type: Number },
+  avgRecoveryTimeByType: { type: Schema.Types.Mixed },
 });
 
 export const MetricsSnapshot =

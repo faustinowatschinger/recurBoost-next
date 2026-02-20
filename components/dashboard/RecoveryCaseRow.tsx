@@ -28,10 +28,16 @@ const STATUS_COLORS: Record<RecoveryStatus, string> = {
 };
 
 const FAILURE_LABELS: Record<FailureType, string> = {
-  HARD_DECLINE: "Hard Decline",
+  HARD_DECLINE_STOLEN: "Stolen Card",
+  HARD_DECLINE_FRAUD: "Fraud",
+  HARD_DECLINE_BLOCKED: "Blocked",
+  AUTHENTICATION_REQUIRED: "Auth Required",
   INSUFFICIENT_FUNDS: "Insuff. Funds",
   EXPIRED_CARD: "Expired Card",
+  DO_NOT_HONOR: "Do Not Honor",
+  INCORRECT_DATA: "Incorrect Data",
   GENERIC: "Generic",
+  HARD_DECLINE: "Hard Decline",
 };
 
 function formatCurrency(amount: number, currency: string): string {

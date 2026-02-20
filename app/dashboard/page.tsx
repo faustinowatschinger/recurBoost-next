@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { RecoveryCaseRow } from "@/components/dashboard/RecoveryCaseRow";
 import type { DashboardMetrics, FailureType, RecoveryStatus } from "@/lib/types";
@@ -21,29 +21,37 @@ export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [cases, setCases] = useState<CaseData[]>([]);
   const [loading, setLoading] = useState(true);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchData = useCallback(async (isInitial = false) => {
+    try {
+      const [metricsRes, casesRes] = await Promise.all([
+        fetch("/api/dashboard/metrics"),
+        fetch("/api/dashboard/cases"),
+      ]);
+
+      if (metricsRes.ok) {
+        setMetrics(await metricsRes.json());
+      }
+      if (casesRes.ok) {
+        setCases(await casesRes.json());
+      }
+    } catch {
+      // Handle error silently
+    } finally {
+      if (isInitial) setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const [metricsRes, casesRes] = await Promise.all([
-          fetch("/api/dashboard/metrics"),
-          fetch("/api/dashboard/cases"),
-        ]);
+    fetchData(true);
 
-        if (metricsRes.ok) {
-          setMetrics(await metricsRes.json());
-        }
-        if (casesRes.ok) {
-          setCases(await casesRes.json());
-        }
-      } catch {
-        // Handle error silently
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
-  }, []);
+    // Poll every 30 seconds for new data
+    intervalRef.current = setInterval(() => fetchData(), 30_000);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [fetchData]);
 
   if (loading) {
     return (

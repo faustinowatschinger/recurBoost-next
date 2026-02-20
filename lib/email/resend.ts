@@ -11,3 +11,7 @@ export function getResend(): Resend {
   }
   return _resend;
 }
+
+export function isEmailConfigured(): boolean {
+  return !!process.env.RESEND_API_KEY;
+}

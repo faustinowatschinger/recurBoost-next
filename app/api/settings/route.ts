@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/connection";
-import { User, StripeAccount } from "@/lib/db/models";
+import { User, PaymentIntegration } from "@/lib/db/models";
 
 export async function GET() {
   const session = await auth();
@@ -12,10 +12,13 @@ export async function GET() {
   await connectDB();
 
   const user = await User.findById(session.user.id).select(
-    "email companyName companyLogo senderName"
+    "email companyName companyLogo senderName brandColor brandButtonColor brandButtonTextColor incentiveEnabled incentiveText smsEnabled smsThresholdAmount"
   );
-  const stripeAccount = await StripeAccount.findOne({ userId: session.user.id }).select(
-    "stripeAccountId baselineRecoveryRate baselineCalculatedAt"
+  const integration = await PaymentIntegration.findOne({
+    userId: session.user.id,
+    status: "active",
+  }).select(
+    "stripeAccountId apiKeyLast4 baselineRecoveryRate baselineCalculatedAt webhookSecretEncrypted webhookEndpointId"
   );
 
   return NextResponse.json({
@@ -24,12 +27,21 @@ export async function GET() {
       companyName: user.companyName || "",
       companyLogo: user.companyLogo || "",
       senderName: user.senderName || "",
+      brandColor: user.brandColor || "#635bff",
+      brandButtonColor: user.brandButtonColor || "#635bff",
+      brandButtonTextColor: user.brandButtonTextColor || "#ffffff",
+      incentiveEnabled: user.incentiveEnabled || false,
+      incentiveText: user.incentiveText || "",
+      smsEnabled: user.smsEnabled || false,
+      smsThresholdAmount: user.smsThresholdAmount || 0,
     } : null,
-    stripe: stripeAccount ? {
+    stripe: integration ? {
       connected: true,
-      stripeAccountId: stripeAccount.stripeAccountId,
-      baselineRecoveryRate: stripeAccount.baselineRecoveryRate,
-      baselineCalculatedAt: stripeAccount.baselineCalculatedAt,
+      stripeAccountId: integration.stripeAccountId,
+      apiKeyLast4: integration.apiKeyLast4,
+      baselineRecoveryRate: integration.baselineRecoveryRate,
+      baselineCalculatedAt: integration.baselineCalculatedAt,
+      webhookConfigured: !!integration.webhookSecretEncrypted,
     } : { connected: false },
   });
 }
@@ -40,7 +52,18 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
   }
 
-  const { companyName, companyLogo, senderName } = await request.json();
+  const {
+    companyName,
+    companyLogo,
+    senderName,
+    brandColor,
+    brandButtonColor,
+    brandButtonTextColor,
+    incentiveEnabled,
+    incentiveText,
+    smsEnabled,
+    smsThresholdAmount,
+  } = await request.json();
 
   await connectDB();
 
@@ -50,6 +73,13 @@ export async function PUT(request: Request) {
       companyName,
       companyLogo,
       senderName,
+      brandColor,
+      brandButtonColor,
+      brandButtonTextColor,
+      incentiveEnabled,
+      incentiveText,
+      smsEnabled,
+      smsThresholdAmount,
     },
     { new: true }
   );
@@ -62,5 +92,12 @@ export async function PUT(request: Request) {
     companyName: user.companyName,
     companyLogo: user.companyLogo,
     senderName: user.senderName,
+    brandColor: user.brandColor,
+    brandButtonColor: user.brandButtonColor,
+    brandButtonTextColor: user.brandButtonTextColor,
+    incentiveEnabled: user.incentiveEnabled,
+    incentiveText: user.incentiveText,
+    smsEnabled: user.smsEnabled,
+    smsThresholdAmount: user.smsThresholdAmount,
   });
 }

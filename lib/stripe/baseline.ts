@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import { connectDB } from "@/lib/db/connection";
-import { StripeAccount } from "@/lib/db/models";
+import { PaymentIntegration } from "@/lib/db/models";
+import { decrypt } from "@/lib/security/crypto";
 
 const DAYS_TO_IMPORT = 90;
 
@@ -13,16 +14,21 @@ interface BaselineResult {
 /**
  * Import historical invoice data from the last 90 days to calculate
  * the baseline recovery rate (before our service was active).
+ * Now uses BYOK PaymentIntegration instead of legacy StripeAccount.
  */
 export async function calculateBaseline(userId: string): Promise<BaselineResult> {
   await connectDB();
 
-  const stripeAccount = await StripeAccount.findOne({ userId });
-  if (!stripeAccount) {
-    throw new Error("Stripe account not connected");
+  const integration = await PaymentIntegration.findOne({
+    userId,
+    status: "active",
+  });
+  if (!integration) {
+    throw new Error("No active Stripe integration found");
   }
 
-  const stripe = new Stripe(stripeAccount.accessToken);
+  const apiKey = decrypt(integration.apiKeyEncrypted);
+  const stripe = new Stripe(apiKey);
 
   const sinceTimestamp = Math.floor(
     (Date.now() - DAYS_TO_IMPORT * 24 * 60 * 60 * 1000) / 1000
@@ -41,13 +47,12 @@ export async function calculateBaseline(userId: string): Promise<BaselineResult>
   // Count paid invoices that had at least one failed attempt
   for await (const invoice of stripe.invoices.list(invoiceParams)) {
     if (invoice.attempted && invoice.attempt_count > 1) {
-      // This invoice failed at least once before being paid
       totalFailed++;
       totalRecovered++;
     }
   }
 
-  // Also count currently uncollectible/open invoices that failed
+  // Also count currently open invoices that failed
   const failedParams: Stripe.InvoiceListParams = {
     created: { gte: sinceTimestamp },
     limit: 100,
@@ -72,14 +77,14 @@ export async function calculateBaseline(userId: string): Promise<BaselineResult>
     ? (totalRecovered / totalFailed) * 100
     : 0;
 
-  // Save baseline to StripeAccount
-  stripeAccount.baselineRecoveryRate = Math.round(recoveryRate * 100) / 100;
-  stripeAccount.baselineCalculatedAt = new Date();
-  await stripeAccount.save();
+  // Save baseline to PaymentIntegration (saves even if rate is 0)
+  integration.baselineRecoveryRate = Math.round(recoveryRate * 100) / 100;
+  integration.baselineCalculatedAt = new Date();
+  await integration.save();
 
   return {
     totalFailed,
     totalRecovered,
-    recoveryRate: stripeAccount.baselineRecoveryRate,
+    recoveryRate: integration.baselineRecoveryRate,
   };
 }
