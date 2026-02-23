@@ -40,15 +40,29 @@ export async function POST(request: NextRequest) {
   }
 
   // Validate the key by making a test API call
+  // Use balance.retrieve() instead of accounts.retrieve() because restricted
+  // keys (rk_*) typically don't have the "account" permission.
   let stripeAccountId: string;
   try {
     const stripe = new Stripe(apiKey);
-    const account = await stripe.accounts.retrieve();
-    stripeAccountId = account.id;
+    const balance = await stripe.balance.retrieve();
+    // The balance object doesn't contain the account ID directly,
+    // but if we reach here the key is valid. Extract account from a
+    // lightweight call that restricted keys can access.
+    // Try accounts.retrieve as a best-effort for the account ID.
+    try {
+      const account = await stripe.accounts.retrieve();
+      stripeAccountId = account.id;
+    } catch {
+      // Restricted keys may not have account read permission.
+      // Use a fallback: the livemode field tells us the key works,
+      // and we store a placeholder account ID.
+      stripeAccountId = balance.livemode ? "acct_live_restricted" : "acct_test_restricted";
+    }
   } catch (err) {
     const message = err instanceof Stripe.errors.StripeAuthenticationError
       ? "API key inválida. Verificá que la key sea correcta y esté activa."
-      : "No se pudo validar la API key con Stripe. Intentá de nuevo.";
+      : "No se pudo validar la API key con Stripe. Verificá que la key tenga al menos el permiso de lectura de balance.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
