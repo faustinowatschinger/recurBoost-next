@@ -2,11 +2,28 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/connection";
 import { User, PaymentIntegration } from "@/lib/db/models";
+import { requireBillingAccess } from "@/lib/billing/guards";
 
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  try {
+    await requireBillingAccess(session.user.id);
+  } catch (err) {
+    if (err instanceof Error && err.message === "BILLING_ACCESS_BLOCKED") {
+      return NextResponse.json(
+        { error: "Cuenta cancelada. Activá un plan para continuar." },
+        { status: 402 }
+      );
+    }
+    console.error("Error validando billing (GET settings):", err);
+    return NextResponse.json(
+      { error: "No se pudo validar el estado de billing" },
+      { status: 500 }
+    );
   }
 
   await connectDB();
@@ -50,6 +67,22 @@ export async function PUT(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+  }
+
+  try {
+    await requireBillingAccess(session.user.id);
+  } catch (err) {
+    if (err instanceof Error && err.message === "BILLING_ACCESS_BLOCKED") {
+      return NextResponse.json(
+        { error: "Cuenta cancelada. Activá un plan para continuar." },
+        { status: 402 }
+      );
+    }
+    console.error("Error validando billing (PUT settings):", err);
+    return NextResponse.json(
+      { error: "No se pudo validar el estado de billing" },
+      { status: 500 }
+    );
   }
 
   const {

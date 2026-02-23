@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Recover More Failed Stripe Payments Than Stripe Does",
+  title: "Increase your Stripe recovery rate - and prove it | RecurBoost",
   description:
-    "RecurBoost recovers more failed Stripe payments automatically. Increase your real MRR with smart recovery sequences. Plans from $59/mo. 30-day free trial.",
+    "If you're doing $10K-$50K MRR on Stripe, failed payments quietly reduce real revenue. RecurBoost increases your recovery rate and shows the exact lift.",
   alternates: {
     canonical: "/",
   },
@@ -17,13 +17,11 @@ const jsonLd = {
   applicationCategory: "BusinessApplication",
   operatingSystem: "Web",
   description:
-    "Recover more failed Stripe payments than Stripe does. Increase your real MRR automatically with smart recovery sequences for SaaS.",
+    "RecurBoost increases your Stripe recovery rate and shows exact incremental lift vs your baseline.",
   offers: {
-    "@type": "AggregateOffer",
+    "@type": "Offer",
     priceCurrency: "USD",
-    lowPrice: "59",
-    highPrice: "199",
-    offerCount: "3",
+    price: "49",
   },
 };
 
@@ -33,10 +31,10 @@ const faqJsonLd = {
   mainEntity: [
     {
       "@type": "Question",
-      name: "How does RecurBoost recover failed Stripe payments?",
+      name: "How does RecurBoost work?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "RecurBoost connects to your Stripe account, imports your last 60-90 days of data, calculates your baseline recovery rate, and deploys smart recovery sequences to improve it. We measure real incremental lift so you see exactly what we recover.",
+        text: "RecurBoost connects to Stripe, imports your last 60-90 days, calculates your recovery baseline, then tracks recovery improvement and incremental lift in dollars.",
       },
     },
     {
@@ -44,15 +42,15 @@ const faqJsonLd = {
       name: "How much does RecurBoost cost?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "Plans start at $59/month for up to $1,000 at risk, $119/month for up to $3,000, and $199/month for up to $8,000. Your plan is automatically assigned based on your Stripe data after a 30-day free trial.",
+        text: "RecurBoost includes 30 free days without card. Then it costs $49/month. You only pay if at least $49 was recovered during your trial.",
       },
     },
     {
       "@type": "Question",
-      name: "Does RecurBoost require any migration or billing changes?",
+      name: "Does RecurBoost access customer card data?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: "No. RecurBoost works with your existing Stripe setup. Connect in 2 minutes, no migration needed, no billing changes required. Cancel anytime.",
+        text: "No. RecurBoost uses the official Stripe API and does not access customer card data.",
       },
     },
   ],
@@ -85,7 +83,6 @@ function ArrowRight() {
 export default function Home() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Nav */}
       <nav className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
         <span className="font-semibold text-xl tracking-tight">
           Recur<span className="text-primary">Boost</span>
@@ -112,24 +109,21 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* Hero */}
       <section className="max-w-4xl mx-auto px-6 pt-24 pb-20 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-card-border bg-card text-sm text-text-muted mb-8">
           <StripeLogo className="w-4 h-4" />
-          <span>Works with your existing Stripe setup</span>
+          <span>Designed for Stripe Billing users</span>
         </div>
 
         <h1 className="text-5xl sm:text-6xl font-bold leading-[1.1] tracking-tight">
-          Recover More Failed Stripe Payments{" "}
-          <span className="text-primary">Than Stripe Does.</span>
+          Your Stripe recovery rate isn&apos;t optimized.
         </h1>
 
-        <p className="mt-6 text-xl text-text-muted max-w-2xl mx-auto leading-relaxed">
-          Increase Your Real MRR — Automatically.
+        <p className="mt-6 text-base text-text-muted max-w-2xl mx-auto">
+          If you&apos;re doing $10K-$50K MRR on Stripe, failed payments are quietly reducing your real revenue.
         </p>
-        <p className="mt-4 text-base text-text-muted max-w-xl mx-auto">
-          If you&apos;re doing $10K–$50K MRR on Stripe, you&apos;re quietly losing revenue
-          every month. We recover more of it. And we prove it.
+        <p className="mt-4 text-xl text-foreground max-w-2xl mx-auto leading-relaxed">
+          RecurBoost increases your Stripe recovery rate - and shows you the exact lift.
         </p>
 
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -137,60 +131,56 @@ export default function Home() {
             href="/register"
             className="inline-flex items-center px-8 py-3.5 bg-primary text-background font-semibold text-lg rounded-lg hover:bg-primary-hover transition-colors"
           >
-            Connect Stripe
+            Connect Stripe -&gt; See Your Recovery Baseline
             <ArrowRight />
           </Link>
         </div>
         <p className="mt-4 text-sm text-text-muted">
           2-minute setup. No migration. No billing changes. Cancel anytime.
         </p>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-text-muted">
+          <span className="px-2.5 py-1 rounded border border-card-border">Built for bootstrapped SaaS founders</span>
+          <span className="px-2.5 py-1 rounded border border-card-border">Uses official Stripe API</span>
+          <span className="px-2.5 py-1 rounded border border-card-border">No access to customer card data</span>
+        </div>
       </section>
 
-      {/* Problem */}
       <section className="max-w-4xl mx-auto px-6 py-20">
         <div className="rounded-xl border border-card-border bg-card p-10 sm:p-14">
-          <h2 className="text-3xl sm:text-4xl font-bold mb-8">
-            Stripe retries. Stripe sends emails.
+          <h2 className="text-3xl sm:text-4xl font-bold mb-8 leading-tight">
+            Stripe retries.
             <br />
-            <span className="text-text-muted">But Stripe doesn&apos;t optimize recovery.</span>
+            Stripe sends reminder emails.
+            <br />
+            Stripe provides a portal.
+            <br />
+            <span className="text-text-muted">But Stripe doesn&apos;t optimize recovery for your business.</span>
           </h2>
 
           <div className="space-y-4 text-lg text-text-muted">
             <p>Every month:</p>
-            <ul className="space-y-3 ml-1">
-              <li className="flex items-start gap-3">
-                <span className="text-danger mt-1">&#x2717;</span>
-                Some customers never retry.
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-danger mt-1">&#x2717;</span>
-                Some cards stay expired.
-              </li>
-              <li className="flex items-start gap-3">
-                <span className="text-danger mt-1">&#x2717;</span>
-                Some payments silently die.
-              </li>
+            <ul className="space-y-3 ml-5 list-disc">
+              <li>Some customers never retry</li>
+              <li>Some cards stay expired</li>
+              <li>Some payments silently fail</li>
             </ul>
             <p className="pt-4 text-foreground font-medium text-xl">
-              That&apos;s revenue you already earned.
+              That revenue was already earned.
               <br />
-              And you&apos;re leaving it there.
+              It just never made it back.
             </p>
           </div>
         </div>
       </section>
 
-      {/* Numbers */}
       <section className="max-w-4xl mx-auto px-6 py-20">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-14">
+        <h2 className="text-3xl sm:text-4xl font-bold text-center mb-3">
           The math is simple.
         </h2>
+        <p className="text-center text-text-muted mb-10">If you&apos;re at $25K MRR:</p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-xl border border-card-border bg-card p-6 text-center">
-            <p className="text-sm text-text-muted mb-2">Your MRR</p>
-            <p className="text-3xl font-bold">$25K</p>
-          </div>
           <div className="rounded-xl border border-card-border bg-card p-6 text-center">
             <p className="text-sm text-text-muted mb-2">6% failed</p>
             <p className="text-3xl font-bold text-danger">$1,500</p>
@@ -200,14 +190,14 @@ export default function Home() {
             <p className="text-sm text-text-muted mb-2">Stripe recovers ~65%</p>
             <p className="text-3xl font-bold text-text-muted">$975</p>
           </div>
-          <div className="rounded-xl border border-card-border bg-card p-6 text-center">
+          <div className="rounded-xl border border-card-border bg-card p-6 text-center sm:col-span-2 lg:col-span-2">
             <p className="text-sm text-text-muted mb-2">Still lost</p>
             <p className="text-3xl font-bold text-danger">$525</p>
           </div>
         </div>
 
         <div className="mt-8 rounded-xl border border-primary/30 bg-primary/5 p-8 text-center">
-          <p className="text-text-muted mb-2">Improve recovery by just 10 points?</p>
+          <p className="text-text-muted mb-2">Improve recovery by 10 points?</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6 mt-4">
             <div>
               <p className="text-4xl font-bold text-primary">+$150</p>
@@ -225,182 +215,107 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Differentiator */}
       <section className="max-w-4xl mx-auto px-6 py-20">
         <div className="text-center mb-14">
           <h2 className="text-3xl sm:text-4xl font-bold">
-            We don&apos;t guess.
+            We don&apos;t promise recovery.
+            <br />
+            We measure improvement.
           </h2>
-          <p className="mt-4 text-lg text-text-muted max-w-xl mx-auto">
-            When you connect Stripe, we import your last 60–90 days and calculate:
+          <p className="mt-4 text-lg text-text-muted max-w-2xl mx-auto">
+            When you connect Stripe, we import your last 60-90 days and calculate:
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="rounded-xl border border-card-border bg-card p-6">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-              <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
             <h3 className="font-semibold text-lg mb-1">Historical recovery rate</h3>
-            <p className="text-sm text-text-muted">Your baseline before RecurBoost.</p>
+            <p className="text-sm text-text-muted">Your baseline.</p>
           </div>
           <div className="rounded-xl border border-card-border bg-card p-6">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-              <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            </div>
             <h3 className="font-semibold text-lg mb-1">Current recovery rate</h3>
-            <p className="text-sm text-text-muted">What&apos;s happening right now.</p>
+            <p className="text-sm text-text-muted">What is happening now.</p>
           </div>
           <div className="rounded-xl border border-card-border bg-card p-6">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-              <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
             <h3 className="font-semibold text-lg mb-1">Real incremental lift</h3>
-            <p className="text-sm text-text-muted">The revenue we actually added.</p>
+            <p className="text-sm text-text-muted">Actual improvement vs baseline.</p>
+          </div>
+          <div className="rounded-xl border border-card-border bg-card p-6">
+            <h3 className="font-semibold text-lg mb-1">Revenue recovered this month</h3>
+            <p className="text-sm text-text-muted">Measured in dollars, not vanity metrics.</p>
           </div>
         </div>
 
         <p className="text-center mt-8 text-text-muted">
-          If we don&apos;t improve it — you&apos;ll see it. <span className="text-foreground font-medium">No vanity metrics.</span>
+          If recovery doesn&apos;t improve, you&apos;ll see it.
+        </p>
+        <p className="text-center mt-2 text-foreground font-medium">
+          No black box metrics. No vanity dashboards. Just recovery rate and dollars.
         </p>
       </section>
 
-      {/* Pricing */}
-      <section id="pricing" className="max-w-4xl mx-auto px-6 py-20">
-        <div className="text-center mb-6">
-          <h2 className="text-3xl sm:text-4xl font-bold">
-            Simple pricing. Based on your numbers.
-          </h2>
-          <p className="mt-4 text-lg text-text-muted max-w-2xl mx-auto">
-            Connect Stripe, get 30 days free. We analyze your failed payments and assign the right plan automatically.
-            If we don&apos;t recover at least your subscription cost — you don&apos;t pay.
-          </p>
-        </div>
+      <section className="max-w-4xl mx-auto px-6 py-20">
+        <div className="rounded-xl border border-card-border bg-card p-10 sm:p-14">
+          <h2 className="text-3xl sm:text-4xl font-bold mb-8">How it works</h2>
 
-        {/* How it works steps */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 mb-14 text-sm text-text-muted">
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">1</span>
-            <span>Connect Stripe</span>
-          </div>
-          <span className="hidden sm:block text-card-border">&rarr;</span>
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">2</span>
-            <span>30 days free</span>
-          </div>
-          <span className="hidden sm:block text-card-border">&rarr;</span>
-          <div className="flex items-center gap-2">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">3</span>
-            <span>Auto-assigned plan</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {/* Starter */}
-          <div className="rounded-xl border border-card-border bg-card p-8 flex flex-col">
-            <p className="text-sm text-text-muted mb-1">Starter</p>
-            <p className="text-sm text-text-muted mb-4">Up to <span className="text-foreground font-medium">$1,000</span> at risk/mo</p>
-            <p className="text-4xl font-bold mb-1">$59<span className="text-lg font-normal text-text-muted">/mo</span></p>
-            <div className="mt-6 space-y-3 flex-1">
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Real-time Stripe integration</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Baseline + lift analytics</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Smart recovery sequences</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Cancel anytime</span>
-              </div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <CheckIcon />
+              <p>Connect Stripe</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckIcon />
+              <p>We classify failed payments by decline type</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckIcon />
+              <p>We trigger optimized recovery sequences</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckIcon />
+              <p>We track actual payment recovery</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <CheckIcon />
+              <p>We calculate real lift vs baseline</p>
             </div>
           </div>
 
-          {/* Growth */}
-          <div className="rounded-xl border border-card-border bg-card p-8 flex flex-col">
-            <p className="text-sm text-text-muted mb-1">Growth</p>
-            <p className="text-sm text-text-muted mb-4">Up to <span className="text-foreground font-medium">$3,000</span> at risk/mo</p>
-            <p className="text-4xl font-bold mb-1">$119<span className="text-lg font-normal text-text-muted">/mo</span></p>
-            <div className="mt-6 space-y-3 flex-1">
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Everything in Starter</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Advanced retry optimization</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Priority recovery queue</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Email support</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Scale */}
-          <div className="rounded-xl border border-card-border bg-card p-8 flex flex-col">
-            <p className="text-sm text-text-muted mb-1">Scale</p>
-            <p className="text-sm text-text-muted mb-4">Up to <span className="text-foreground font-medium">$8,000</span> at risk/mo</p>
-            <p className="text-4xl font-bold mb-1">$199<span className="text-lg font-normal text-text-muted">/mo</span></p>
-            <div className="mt-6 space-y-3 flex-1">
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Everything in Growth</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Custom recovery sequences</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Dedicated account manager</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <CheckIcon />
-                <span className="text-sm">Priority support</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-8 text-center">
-          <Link
-            href="/register"
-            className="inline-flex items-center px-8 py-3.5 bg-primary text-background font-semibold text-lg rounded-lg hover:bg-primary-hover transition-colors"
-          >
-            Start 30-day free trial
-            <ArrowRight />
-          </Link>
-          <p className="mt-3 text-sm text-text-muted">
-            No credit card required. We&apos;ll calculate your plan from your Stripe data.
-          </p>
+          <p className="mt-8 text-foreground font-medium">That&apos;s it.</p>
+          <p className="mt-4 text-text-muted">No billing migration. No replacing Stripe. No workflow changes.</p>
+          <p className="mt-1 text-text-muted">Works on top of your existing Stripe setup.</p>
         </div>
       </section>
 
-      {/* Final CTA */}
+      <section id="pricing" className="max-w-4xl mx-auto px-6 py-20">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl sm:text-4xl font-bold">One plan. No complexity.</h2>
+          <p className="mt-4 text-lg text-text-muted">30 days free. No credit card required.</p>
+        </div>
+
+        <div className="max-w-md mx-auto rounded-xl border border-card-border bg-card p-8 flex flex-col text-center">
+          <p className="text-4xl font-bold mb-2">$49/month</p>
+          <p className="text-text-muted">You only pay if we recover at least $49 during your trial.</p>
+          <p className="mt-3 text-foreground font-medium">If we don&apos;t generate value, you don&apos;t pay.</p>
+
+          <Link
+            href="/register"
+            className="mt-6 inline-flex items-center justify-center px-8 py-3.5 bg-primary text-background font-semibold text-lg rounded-lg hover:bg-primary-hover transition-colors"
+          >
+            Connect with Stripe
+            <ArrowRight />
+          </Link>
+        </div>
+      </section>
+
       <section className="max-w-4xl mx-auto px-6 py-20 text-center">
         <h2 className="text-3xl sm:text-4xl font-bold mb-6">
-          Stop leaking Stripe revenue.
+          Stop leaking revenue from failed Stripe payments.
         </h2>
         <div className="space-y-2 text-lg text-text-muted mb-10">
           <p>Connect Stripe.</p>
-          <p>See your baseline.</p>
-          <p>Start recovering what&apos;s already yours.</p>
+          <p>See your real recovery rate.</p>
+          <p>Improve what&apos;s already yours.</p>
         </div>
         <Link
           href="/register"
@@ -411,17 +326,13 @@ export default function Home() {
         </Link>
       </section>
 
-      {/* Footer */}
       <footer className="max-w-6xl mx-auto px-6 py-8 border-t border-card-border flex flex-col sm:flex-row items-center justify-between gap-4">
         <span className="font-semibold text-sm tracking-tight">
           Recur<span className="text-primary">Boost</span>
         </span>
-        <p className="text-sm text-text-muted">
-          Revenue precision for SaaS.
-        </p>
+        <p className="text-sm text-text-muted">Built for technical SaaS founders.</p>
       </footer>
 
-      {/* Structured Data */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

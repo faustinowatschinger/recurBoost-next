@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/connection";
 import { PaymentIntegration } from "@/lib/db/models";
 import { mockStripeStatus } from "@/lib/mock-data";
+import { getBillingAccessState } from "@/lib/billing/service";
 
 export async function GET() {
   if (process.env.MOCK_DATA === "true") {
@@ -15,6 +16,10 @@ export async function GET() {
   }
 
   await connectDB();
+
+  const billing = await getBillingAccessState(session.user.id, {
+    autoExpireTrial: true,
+  });
 
   const integration = await PaymentIntegration.findOne({
     userId: session.user.id,
@@ -30,5 +35,9 @@ export async function GET() {
     baselineRecoveryRate: integration?.baselineRecoveryRate ?? null,
     baselineCalculatedAt: integration?.baselineCalculatedAt || null,
     webhookConfigured: !!integration?.webhookSecretEncrypted,
+    billingStatus: billing.billingStatus,
+    trialDaysLeft: billing.trialDaysLeft,
+    recoveredDuringTrial: billing.recoveredDuringTrial,
+    reachedMinimumCharge: billing.reachedMinimumCharge,
   });
 }

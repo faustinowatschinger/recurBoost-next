@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/connection";
 import { RecoveryCase } from "@/lib/db/models";
 import { mockCases } from "@/lib/mock-data";
+import { requireBillingAccess } from "@/lib/billing/guards";
 
 export async function GET() {
   if (process.env.MOCK_DATA === "true") {
@@ -15,6 +16,7 @@ export async function GET() {
   }
 
   try {
+    await requireBillingAccess(session.user.id);
     await connectDB();
 
     const cases = await RecoveryCase.find({ userId: session.user.id })
@@ -24,6 +26,13 @@ export async function GET() {
 
     return NextResponse.json(cases);
   } catch (err) {
+    if (err instanceof Error && err.message === "BILLING_ACCESS_BLOCKED") {
+      return NextResponse.json(
+        { error: "Cuenta cancelada. Activá un plan para continuar." },
+        { status: 402 }
+      );
+    }
+
     console.error("Error fetching cases:", err);
     return NextResponse.json(
       { error: "Error al obtener casos" },

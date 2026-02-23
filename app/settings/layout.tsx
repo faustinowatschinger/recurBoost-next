@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
+import { getBillingAccessState } from "@/lib/billing/service";
 
 export default async function SettingsLayout({
   children,
@@ -10,6 +11,13 @@ export default async function SettingsLayout({
   const session = await auth();
   if (!session?.user) {
     redirect("/login");
+  }
+
+  const billing = await getBillingAccessState(session.user.id, {
+    autoExpireTrial: true,
+  });
+  if (!billing.canAccessProduct) {
+    redirect("/billing");
   }
 
   return (

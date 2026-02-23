@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getStripeLegacy } from "@/lib/stripe/client";
 import { connectDB } from "@/lib/db/connection";
 import { StripeAccount } from "@/lib/db/models";
+import { getBillingAccessState, startTrialForUser } from "@/lib/billing/service";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
@@ -57,6 +58,15 @@ export async function GET(request: NextRequest) {
       },
       { upsert: true, new: true }
     );
+
+    await startTrialForUser(userId);
+
+    const billing = await getBillingAccessState(userId, {
+      autoExpireTrial: true,
+    });
+    if (!billing.canAccessProduct) {
+      return NextResponse.redirect(new URL("/billing", request.url));
+    }
 
     // Register webhooks for the connected account
     try {

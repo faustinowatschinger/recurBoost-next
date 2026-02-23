@@ -1,9 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { processEmailSequences } from "@/lib/recovery/engine";
 import { processExpiredTrials } from "@/lib/billing/service";
 
 export async function POST(request: NextRequest) {
-  // Simple API key auth for cron protection
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
@@ -12,11 +10,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const billingResult = await processExpiredTrials();
-    await processEmailSequences();
-    return NextResponse.json({ success: true, billing: billingResult });
+    const result = await processExpiredTrials();
+    return NextResponse.json({ success: true, ...result });
   } catch (err) {
-    console.error("Error processing email sequences:", err);
+    console.error("Error procesando trials vencidos:", err);
     return NextResponse.json(
       { error: "Processing failed" },
       { status: 500 }

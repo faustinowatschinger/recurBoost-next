@@ -15,6 +15,16 @@ export interface IUser extends Document {
   // SMS config (placeholder)
   smsEnabled?: boolean;
   smsThresholdAmount?: number;
+  billingStatus?: "trialing" | "active" | "canceled";
+  trialStartedAt?: Date;
+  trialEndsAt?: Date;
+  trialRecoveredAmount?: number;
+  trialSummaryEmailSentAt?: Date;
+  billingCanceledAt?: Date;
+  billingCancellationReason?: string;
+  stripeBillingCustomerId?: string;
+  stripeBillingSubscriptionId?: string;
+  stripeBillingSubscriptionStatus?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -35,6 +45,19 @@ const UserSchema = new Schema<IUser>(
     // SMS (placeholder)
     smsEnabled: { type: Boolean, default: false },
     smsThresholdAmount: { type: Number },
+    billingStatus: {
+      type: String,
+      enum: ["trialing", "active", "canceled"],
+    },
+    trialStartedAt: { type: Date },
+    trialEndsAt: { type: Date },
+    trialRecoveredAmount: { type: Number },
+    trialSummaryEmailSentAt: { type: Date },
+    billingCanceledAt: { type: Date },
+    billingCancellationReason: { type: String },
+    stripeBillingCustomerId: { type: String },
+    stripeBillingSubscriptionId: { type: String },
+    stripeBillingSubscriptionStatus: { type: String },
   },
   { timestamps: true }
 );

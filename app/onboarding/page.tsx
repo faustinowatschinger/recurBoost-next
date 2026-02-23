@@ -37,6 +37,10 @@ function OnboardingContent() {
       try {
         const res = await fetch("/api/stripe/status");
         const data = await res.json();
+        if (data.billingStatus === "canceled") {
+          router.push("/billing");
+          return;
+        }
         setStripeConnected(data.connected);
         setWebhookConfigured(data.webhookConfigured);
         if (data.connected && data.baselineCalculated) {

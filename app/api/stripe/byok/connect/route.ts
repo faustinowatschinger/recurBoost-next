@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/connection";
 import { PaymentIntegration } from "@/lib/db/models";
 import { encrypt, redactKey } from "@/lib/security/crypto";
+import { getBillingAccessState, startTrialForUser } from "@/lib/billing/service";
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -95,6 +96,26 @@ export async function POST(request: NextRequest) {
     },
     { upsert: true, new: true }
   );
+
+  await startTrialForUser(session.user.id);
+
+  const billing = await getBillingAccessState(session.user.id, {
+    autoExpireTrial: true,
+  });
+  if (!billing.canAccessProduct) {
+    await PaymentIntegration.findOneAndUpdate(
+      { userId: session.user.id },
+      { status: "disconnected" }
+    );
+
+    return NextResponse.json(
+      {
+        error:
+          "Tu prueba ya terminó. Activá el plan para volver a usar la recuperación.",
+      },
+      { status: 402 }
+    );
+  }
 
   return NextResponse.json({
     success: true,

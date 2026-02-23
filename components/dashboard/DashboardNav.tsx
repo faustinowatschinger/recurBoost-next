@@ -27,6 +27,12 @@ export function DashboardNav({ userName }: DashboardNavProps) {
           >
             Settings
           </Link>
+          <Link
+            href="/billing"
+            className="text-sm text-text-muted hover:text-foreground transition-colors"
+          >
+            Billing
+          </Link>
         </div>
         <div className="flex items-center gap-4">
           <span className="text-sm text-text-muted">{userName}</span>
