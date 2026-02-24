@@ -1,6 +1,5 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 export const metadata: Metadata = {
@@ -83,12 +82,14 @@ function ArrowRight() {
 }
 
 export default async function Home() {
-  if (process.env.MOCK_DATA !== "true") {
-    const session = await auth();
-    if (session?.user) {
-      redirect("/dashboard");
-    }
-  }
+  const session = process.env.MOCK_DATA !== "true" ? await auth() : null;
+  const isAuthenticated = Boolean(session?.user);
+  const primaryHref = isAuthenticated ? "/dashboard" : "/register";
+  const primaryLabel = isAuthenticated
+    ? "Go to Dashboard"
+    : "Connect Stripe -> See Your Recovery Baseline";
+  const secondaryHref = isAuthenticated ? "/dashboard" : "/login";
+  const secondaryLabel = isAuthenticated ? "Dashboard" : "Log in";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -104,17 +105,19 @@ export default async function Home() {
             Pricing
           </Link>
           <Link
-            href="/login"
+            href={secondaryHref}
             className="text-sm text-text-muted hover:text-foreground transition-colors"
           >
-            Log in
+            {secondaryLabel}
           </Link>
-          <Link
-            href="/register"
-            className="text-sm px-4 py-2 bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors"
-          >
-            Connect Stripe
-          </Link>
+          {!isAuthenticated && (
+            <Link
+              href="/register"
+              className="text-sm px-4 py-2 bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors"
+            >
+              Connect Stripe
+            </Link>
+          )}
         </div>
       </nav>
 
@@ -137,10 +140,10 @@ export default async function Home() {
 
         <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link
-            href="/register"
+            href={primaryHref}
             className="inline-flex items-center px-8 py-3.5 bg-primary text-background font-semibold text-lg rounded-lg hover:bg-primary-hover transition-colors"
           >
-            Connect Stripe -&gt; See Your Recovery Baseline
+            {primaryLabel}
             <ArrowRight />
           </Link>
         </div>
@@ -308,10 +311,10 @@ export default async function Home() {
           <p className="mt-3 text-foreground font-medium">If we don&apos;t generate value, you don&apos;t pay.</p>
 
           <Link
-            href="/register"
+            href={primaryHref}
             className="mt-6 inline-flex items-center justify-center px-8 py-3.5 bg-primary text-background font-semibold text-lg rounded-lg hover:bg-primary-hover transition-colors"
           >
-            Connect with Stripe
+            {isAuthenticated ? "Open Dashboard" : "Connect with Stripe"}
             <ArrowRight />
           </Link>
         </div>
@@ -327,10 +330,10 @@ export default async function Home() {
           <p>Improve what&apos;s already yours.</p>
         </div>
         <Link
-          href="/register"
+          href={primaryHref}
           className="inline-flex items-center px-8 py-3.5 bg-primary text-background font-semibold text-lg rounded-lg hover:bg-primary-hover transition-colors"
         >
-          Connect with Stripe
+          {isAuthenticated ? "Go to Dashboard" : "Connect with Stripe"}
           <ArrowRight />
         </Link>
       </section>

@@ -48,14 +48,6 @@ export default function LoginPage() {
     setGoogleLoading(false);
   }
 
-  if (status !== "unauthenticated") {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
-        <p className="text-sm text-gray-500">Checking session...</p>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
       <div className="w-full max-w-md p-8 space-y-6">
