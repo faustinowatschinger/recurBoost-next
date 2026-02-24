@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/connection";
 import { PaymentIntegration } from "@/lib/db/models";
-import { encrypt, redactKey } from "@/lib/security/crypto";
+import { decrypt, encrypt, redactKey } from "@/lib/security/crypto";
 import { getBillingAccessState, startTrialForUser } from "@/lib/billing/service";
 
 export async function POST(request: NextRequest) {
@@ -66,7 +66,30 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
-  // Optionally create a webhook endpoint automatically
+  await connectDB();
+
+  // Delete old webhook endpoint from Stripe if one exists
+  const existingIntegration = await PaymentIntegration.findOne({
+    userId: session.user.id,
+  });
+  if (existingIntegration?.webhookEndpointId) {
+    try {
+      const oldStripe = existingIntegration.apiKeyEncrypted
+        ? new Stripe(decrypt(existingIntegration.apiKeyEncrypted))
+        : new Stripe(apiKey);
+      await oldStripe.webhookEndpoints.del(
+        existingIntegration.webhookEndpointId
+      );
+      console.log(
+        `Deleted old webhook endpoint: ${existingIntegration.webhookEndpointId}`
+      );
+    } catch (err) {
+      // Best-effort: old key may be invalid or endpoint already gone
+      console.warn("Could not delete old webhook endpoint:", err);
+    }
+  }
+
+  // Create a new webhook endpoint automatically
   let webhookSecretEncrypted: string | undefined;
   let webhookEndpointId: string | undefined;
 
@@ -90,8 +113,6 @@ export async function POST(request: NextRequest) {
     // have webhook_endpoints write permission, the user can add the secret manually later.
     console.warn("Could not auto-create webhook endpoint:", err);
   }
-
-  await connectDB();
 
   // Upsert: if user already has an integration, replace it
   const integration = await PaymentIntegration.findOneAndUpdate(

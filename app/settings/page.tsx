@@ -466,57 +466,66 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {/* Webhook Secret (if not configured) */}
-            {!data.stripe.webhookConfigured && (
-              <form onSubmit={handleSaveWebhookSecret} className="p-4 bg-background border border-warning/30 rounded-lg space-y-3">
-                <p className="text-sm font-medium text-foreground">Set up Webhook</p>
+            {/* Webhook Secret — always visible so user can update */}
+            <form onSubmit={handleSaveWebhookSecret} className={`p-4 bg-background border rounded-lg space-y-3 ${data.stripe.webhookConfigured ? "border-card-border" : "border-warning/30"}`}>
+              <p className="text-sm font-medium text-foreground">
+                {data.stripe.webhookConfigured ? "Update Webhook Secret" : "Set up Webhook"}
+              </p>
+              {!data.stripe.webhookConfigured && (
+                <>
+                  <p className="text-xs text-text-muted">
+                    To detect failed payments, you need to create a webhook in Stripe:
+                  </p>
+                  <ol className="text-xs text-text-muted space-y-1.5 list-decimal list-inside">
+                    <li>
+                      Go to{" "}
+                      <a
+                        href="https://dashboard.stripe.com/webhooks/create"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary underline hover:text-primary-hover"
+                      >
+                        Stripe Dashboard &gt; Webhooks
+                      </a>
+                    </li>
+                    <li>
+                      In <strong className="text-foreground">Endpoint URL</strong> paste:{" "}
+                      <code className="bg-card border border-card-border px-1.5 py-0.5 rounded text-foreground select-all">
+                        {typeof window !== "undefined" ? window.location.origin : ""}/api/stripe/webhooks
+                      </code>
+                    </li>
+                    <li>
+                      In <strong className="text-foreground">Events</strong> select:{" "}
+                      <code className="bg-card border border-card-border px-1 rounded text-foreground">invoice.payment_failed</code>,{" "}
+                      <code className="bg-card border border-card-border px-1 rounded text-foreground">invoice.paid</code>,{" "}
+                      <code className="bg-card border border-card-border px-1 rounded text-foreground">customer.subscription.updated</code>
+                    </li>
+                    <li>Click <strong className="text-foreground">Add endpoint</strong></li>
+                    <li>Copy the <strong className="text-foreground">Signing secret</strong> (starts with <code className="bg-card border border-card-border px-1 rounded">whsec_</code>) and paste it below</li>
+                  </ol>
+                </>
+              )}
+              {data.stripe.webhookConfigured && (
                 <p className="text-xs text-text-muted">
-                  To detect failed payments, you need to create a webhook in Stripe:
+                  If you created a new webhook endpoint in Stripe, paste the new signing secret here to replace the current one.
                 </p>
-                <ol className="text-xs text-text-muted space-y-1.5 list-decimal list-inside">
-                  <li>
-                    Go to{" "}
-                    <a
-                      href="https://dashboard.stripe.com/webhooks/create"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary underline hover:text-primary-hover"
-                    >
-                      Stripe Dashboard &gt; Webhooks
-                    </a>
-                  </li>
-                  <li>
-                    In <strong className="text-foreground">Endpoint URL</strong> paste:{" "}
-                    <code className="bg-card border border-card-border px-1.5 py-0.5 rounded text-foreground select-all">
-                      {typeof window !== "undefined" ? window.location.origin : ""}/api/stripe/webhooks
-                    </code>
-                  </li>
-                  <li>
-                    In <strong className="text-foreground">Events</strong> select:{" "}
-                    <code className="bg-card border border-card-border px-1 rounded text-foreground">invoice.payment_failed</code>,{" "}
-                    <code className="bg-card border border-card-border px-1 rounded text-foreground">invoice.paid</code>,{" "}
-                    <code className="bg-card border border-card-border px-1 rounded text-foreground">customer.subscription.updated</code>
-                  </li>
-                  <li>Click <strong className="text-foreground">Add endpoint</strong></li>
-                  <li>Copy the <strong className="text-foreground">Signing secret</strong> (starts with <code className="bg-card border border-card-border px-1 rounded">whsec_</code>) and paste it below</li>
-                </ol>
-                <input
-                  type="password"
-                  value={webhookSecret}
-                  onChange={(e) => setWebhookSecret(e.target.value)}
-                  placeholder="whsec_..."
-                  className="block w-full px-3 py-2 bg-card border border-card-border rounded-lg text-foreground placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={savingWebhook || !webhookSecret}
-                  className="px-3 py-1.5 text-sm bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
-                >
-                  {savingWebhook ? "Saving..." : "Save webhook secret"}
-                </button>
-              </form>
-            )}
+              )}
+              <input
+                type="password"
+                value={webhookSecret}
+                onChange={(e) => setWebhookSecret(e.target.value)}
+                placeholder="whsec_..."
+                className="block w-full px-3 py-2 bg-card border border-card-border rounded-lg text-foreground placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
+                required
+              />
+              <button
+                type="submit"
+                disabled={savingWebhook || !webhookSecret}
+                className="px-3 py-1.5 text-sm bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
+              >
+                {savingWebhook ? "Saving..." : data.stripe.webhookConfigured ? "Update webhook secret" : "Save webhook secret"}
+              </button>
+            </form>
 
             {/* Rotate credentials */}
             {showRotateForm ? (
