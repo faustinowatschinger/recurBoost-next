@@ -1,5 +1,7 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
 
 export const metadata: Metadata = {
   title: "Increase your Stripe recovery rate - and prove it | RecurBoost",
@@ -80,7 +82,14 @@ function ArrowRight() {
   );
 }
 
-export default function Home() {
+export default async function Home() {
+  if (process.env.MOCK_DATA !== "true") {
+    const session = await auth();
+    if (session?.user) {
+      redirect("/dashboard");
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <nav className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
