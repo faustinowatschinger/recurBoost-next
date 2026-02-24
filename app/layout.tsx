@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
+import { CookieConsentBannerMount } from "@/components/cookies/CookieConsentBannerMount";
 import { SessionProvider } from "@/components/providers/SessionProvider";
 import "./globals.css";
 
@@ -101,6 +102,7 @@ export default function RootLayout({
         className={`${inter.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>{children}</SessionProvider>
+        <CookieConsentBannerMount />
       </body>
     </html>
   );

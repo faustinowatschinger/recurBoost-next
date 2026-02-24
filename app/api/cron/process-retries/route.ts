@@ -1,12 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { processSmartRetries } from "@/lib/recovery/engine";
+import { validateCronRequest } from "@/lib/security/cron-auth";
 
 export async function POST(request: NextRequest) {
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = validateCronRequest(request);
+  if (!auth.ok) {
+    return NextResponse.json(
+      { error: auth.error ?? "Unauthorized" },
+      { status: auth.status }
+    );
   }
 
   try {

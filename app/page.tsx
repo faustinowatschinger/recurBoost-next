@@ -1,6 +1,7 @@
 ﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { auth } from "@/auth";
+import { isMockModeEnabled } from "@/lib/security/runtime";
 
 export const metadata: Metadata = {
   title: "Increase your Stripe recovery rate - and prove it | RecurBoost",
@@ -82,7 +83,7 @@ function ArrowRight() {
 }
 
 export default async function Home() {
-  const session = process.env.MOCK_DATA !== "true" ? await auth() : null;
+  const session = isMockModeEnabled ? null : await auth();
   const isAuthenticated = Boolean(session?.user);
   const primaryHref = isAuthenticated ? "/dashboard" : "/register";
   const primaryLabel = isAuthenticated
@@ -342,7 +343,23 @@ export default async function Home() {
         <span className="font-semibold text-sm tracking-tight">
           Recur<span className="text-primary">Boost</span>
         </span>
-        <p className="text-sm text-text-muted">Built for technical SaaS founders.</p>
+        <div className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-muted">
+          <Link href="/terms" className="hover:text-foreground transition-colors">
+            Terms
+          </Link>
+          <Link href="/privacy" className="hover:text-foreground transition-colors">
+            Privacy
+          </Link>
+          <Link href="/cookies" className="hover:text-foreground transition-colors">
+            Cookies
+          </Link>
+          <Link href="/dpa" className="hover:text-foreground transition-colors">
+            DPA
+          </Link>
+          <Link href="/billing-refunds" className="hover:text-foreground transition-colors">
+            Billing & Refunds
+          </Link>
+        </div>
       </footer>
 
       <script
@@ -356,3 +373,6 @@ export default async function Home() {
     </div>
   );
 }
+
+
+

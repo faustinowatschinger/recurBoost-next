@@ -256,7 +256,7 @@ export default function SettingsPage() {
                 <input
                   id="logoUpload"
                   type="file"
-                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  accept="image/png,image/jpeg,image/webp"
                   className="sr-only"
                   disabled={uploadingLogo}
                   onChange={async (e) => {
@@ -287,7 +287,7 @@ export default function SettingsPage() {
                 />
               </label>
               <p className="mt-1.5 text-xs text-text-muted">
-                PNG, JPG, WebP or SVG. Max 512KB.
+                PNG, JPG or WebP. Max 512KB.
               </p>
             </div>
             {companyLogo && (

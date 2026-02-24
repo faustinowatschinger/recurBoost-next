@@ -1,4 +1,4 @@
-import { createHmac } from "crypto";
+﻿import { createHmac, timingSafeEqual } from "node:crypto";
 import { getStripeForUser } from "@/lib/stripe/client";
 import { getResend, isEmailConfigured } from "@/lib/email/resend";
 import { getEmailTypeForFailure, EMAIL_SEQUENCES } from "@/lib/email/sequences";
@@ -7,18 +7,61 @@ import { connectDB } from "@/lib/db/connection";
 import { User, RecoveryCase, EmailSent } from "@/lib/db/models";
 import type { IRecoveryCase } from "@/lib/db/models";
 import type { SequenceStep } from "@/lib/types";
+import { sanitizeEmailTemplateInput } from "@/lib/security/email-sanitize";
 
-const RECOVERY_TOKEN_SECRET = process.env.APP_ENCRYPTION_KEY || "dev-secret-key";
+const RECOVERY_TOKEN_TTL_SECONDS =
+  parseInt(process.env.RECOVERY_TOKEN_TTL_SECONDS || "1209600", 10) || 1209600; // 14 days
+
+function getRecoveryTokenSecret(): string {
+  const secret = process.env.APP_RECOVERY_TOKEN_SECRET;
+  if (!secret) {
+    throw new Error("APP_RECOVERY_TOKEN_SECRET is required");
+  }
+  return secret;
+}
+
+function safeEquals(a: string, b: string): boolean {
+  const aBuf = Buffer.from(a);
+  const bBuf = Buffer.from(b);
+
+  if (aBuf.length !== bBuf.length) {
+    return false;
+  }
+
+  return timingSafeEqual(aBuf, bBuf);
+}
 
 export function generateRecoveryToken(caseId: string): string {
-  return createHmac("sha256", RECOVERY_TOKEN_SECRET)
-    .update(caseId)
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const payload = `${caseId}:${issuedAt}`;
+  const signature = createHmac("sha256", getRecoveryTokenSecret())
+    .update(payload)
     .digest("hex");
+
+  return `${issuedAt}.${signature}`;
 }
 
 export function verifyRecoveryToken(caseId: string, token: string): boolean {
-  const expected = generateRecoveryToken(caseId);
-  return token === expected;
+  try {
+    const [issuedAtRaw, signature] = token.split(".");
+    const issuedAt = Number.parseInt(issuedAtRaw, 10);
+    if (!issuedAtRaw || !signature || Number.isNaN(issuedAt)) {
+      return false;
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    if (issuedAt > now + 60) return false;
+    if (now - issuedAt > RECOVERY_TOKEN_TTL_SECONDS) return false;
+
+    const payload = `${caseId}:${issuedAt}`;
+    const expectedSignature = createHmac("sha256", getRecoveryTokenSecret())
+      .update(payload)
+      .digest("hex");
+
+    return safeEquals(signature, expectedSignature);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -95,9 +138,6 @@ export async function sendRecoveryEmail(
     // Generate recovery token for landing page auth
     const caseId = recoveryCase._id.toString();
     const recoveryToken = generateRecoveryToken(caseId);
-    if (!recoveryCase.recoveryToken) {
-      recoveryCase.recoveryToken = recoveryToken;
-    }
 
     // Build landing page URL (generates fresh portal URL on click)
     const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
@@ -112,20 +152,31 @@ export async function sendRecoveryEmail(
     // Load user incentive config for final step
     const isFinalStep = stepConfig.isFinalWarning === true;
 
-    const html = getEmailHtml(emailType, step, {
+    const templateInput = sanitizeEmailTemplateInput({
       companyName: user.companyName || "Tu proveedor",
       companyLogo: user.companyLogo,
       senderName: user.senderName || user.companyName || "Soporte",
       portalUrl: trackingUrl,
+      preheader: stepConfig.preheader,
+      openPixelUrl,
+      incentiveText:
+        user.incentiveText || "Si actualizas hoy, mantienes el precio actual.",
+    });
+
+    const html = getEmailHtml(emailType, step, {
+      companyName: templateInput.companyName,
+      companyLogo: templateInput.companyLogo,
+      senderName: templateInput.senderName,
+      portalUrl: templateInput.portalUrl,
       amount: recoveryCase.amount.toString(),
       currency: recoveryCase.currency,
       brandColor: user.brandColor,
       brandButtonColor: user.brandButtonColor,
       brandButtonTextColor: user.brandButtonTextColor,
-      preheader: stepConfig.preheader,
-      openPixelUrl,
+      preheader: templateInput.preheader,
+      openPixelUrl: templateInput.openPixelUrl,
       showIncentive: isFinalStep && user.incentiveEnabled === true,
-      incentiveText: user.incentiveText || "Si actualizás hoy, mantenés el precio actual.",
+      incentiveText: templateInput.incentiveText,
     });
 
     // If Resend is not configured, log the email instead of sending
@@ -178,7 +229,7 @@ export async function sendRecoveryEmail(
 }
 
 /**
- * Process pending email sequences — call this via a cron job or scheduled task.
+ * Process pending email sequences â€” call this via a cron job or scheduled task.
  * Checks all active recovery cases and sends the next email if the timing is right.
  */
 export async function processEmailSequences() {
@@ -282,3 +333,5 @@ export async function generateFreshPortalUrl(
     recoveryCase._id.toString()
   );
 }
+
+

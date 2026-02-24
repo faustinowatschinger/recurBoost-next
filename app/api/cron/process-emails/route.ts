@@ -1,14 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { processEmailSequences } from "@/lib/recovery/engine";
 import { processExpiredTrials } from "@/lib/billing/service";
+import { validateCronRequest } from "@/lib/security/cron-auth";
 
 export async function POST(request: NextRequest) {
-  // Simple API key auth for cron protection
-  const authHeader = request.headers.get("authorization");
-  const cronSecret = process.env.CRON_SECRET;
-
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = validateCronRequest(request);
+  if (!auth.ok) {
+    return NextResponse.json(
+      { error: auth.error ?? "Unauthorized" },
+      { status: auth.status }
+    );
   }
 
   try {

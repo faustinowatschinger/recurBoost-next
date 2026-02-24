@@ -114,10 +114,12 @@ export default function RegisterPage() {
               name="password"
               type="password"
               required
-              minLength={8}
+              minLength={10}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[var(--background)] text-[var(--foreground)]"
             />
-            <p className="mt-1 text-xs text-gray-400">Minimum 8 characters</p>
+            <p className="mt-1 text-xs text-gray-400">
+              Minimum 10 characters, with letters and numbers
+            </p>
           </div>
 
           <button
@@ -127,6 +129,22 @@ export default function RegisterPage() {
           >
             {loading ? "Creating account..." : "Create account"}
           </button>
+
+          <p className="text-xs text-gray-500 leading-5">
+            By creating an account, you agree to our{" "}
+            <Link href="/terms" className="text-blue-600 hover:underline">
+              Terms of Service
+            </Link>
+            ,{" "}
+            <Link href="/privacy" className="text-blue-600 hover:underline">
+              Privacy Policy
+            </Link>
+            , and{" "}
+            <Link href="/cookies" className="text-blue-600 hover:underline">
+              Cookie Policy
+            </Link>
+            .
+          </p>
         </form>
 
         {googleEnabled && (

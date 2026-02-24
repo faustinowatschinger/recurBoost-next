@@ -4,9 +4,10 @@ import { connectDB } from "@/lib/db/connection";
 import { PaymentIntegration } from "@/lib/db/models";
 import { mockStripeStatus } from "@/lib/mock-data";
 import { getBillingAccessState } from "@/lib/billing/service";
+import { isMockModeEnabled } from "@/lib/security/runtime";
 
 export async function GET() {
-  if (process.env.MOCK_DATA === "true") {
+  if (isMockModeEnabled) {
     return NextResponse.json(mockStripeStatus);
   }
 

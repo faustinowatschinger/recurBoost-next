@@ -4,8 +4,32 @@ import { connectDB } from "@/lib/db/connection";
 import { User } from "@/lib/db/models";
 import { requireBillingAccess } from "@/lib/billing/guards";
 
-const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
-const MAX_SIZE = 512 * 1024; // 512KB — logos should be small
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp"] as const;
+const MAX_SIZE = 512 * 1024; // 512KB
+
+function isPng(buffer: Buffer): boolean {
+  const signature = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+  return signature.every((byte, idx) => buffer[idx] === byte);
+}
+
+function isJpeg(buffer: Buffer): boolean {
+  return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+}
+
+function isWebp(buffer: Buffer): boolean {
+  return (
+    buffer.length > 12 &&
+    buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
+    buffer.subarray(8, 12).toString("ascii") === "WEBP"
+  );
+}
+
+function matchesMimeSignature(buffer: Buffer, mimeType: string): boolean {
+  if (mimeType === "image/png") return isPng(buffer);
+  if (mimeType === "image/jpeg") return isJpeg(buffer);
+  if (mimeType === "image/webp") return isWebp(buffer);
+  return false;
+}
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -35,9 +59,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No file received" }, { status: 400 });
   }
 
-  if (!ALLOWED_TYPES.includes(file.type)) {
+  if (!ALLOWED_TYPES.includes(file.type as (typeof ALLOWED_TYPES)[number])) {
     return NextResponse.json(
-      { error: "Unsupported format. Use PNG, JPG, WebP or SVG." },
+      { error: "Unsupported format. Use PNG, JPG or WebP." },
       { status: 400 }
     );
   }
@@ -49,8 +73,14 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Convert to base64 data URI — works in any deployment (Vercel, Docker, etc.)
   const buffer = Buffer.from(await file.arrayBuffer());
+  if (!matchesMimeSignature(buffer, file.type)) {
+    return NextResponse.json(
+      { error: "Invalid file content for the declared image type." },
+      { status: 400 }
+    );
+  }
+
   const base64 = buffer.toString("base64");
   const dataUri = `data:${file.type};base64,${base64}`;
 
@@ -59,3 +89,4 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({ url: dataUri });
 }
+

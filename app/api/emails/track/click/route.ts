@@ -2,6 +2,22 @@ import { NextResponse, type NextRequest } from "next/server";
 import { connectDB } from "@/lib/db/connection";
 import { EmailSent } from "@/lib/db/models";
 
+function resolveSafeRedirect(target: string, request: NextRequest): URL {
+  try {
+    const parsed = new URL(target, request.url);
+    const isHttp = parsed.protocol === "http:" || parsed.protocol === "https:";
+    const sameOrigin = parsed.origin === request.nextUrl.origin;
+
+    if (!isHttp || !sameOrigin) {
+      return new URL("/", request.url);
+    }
+
+    return parsed;
+  } catch {
+    return new URL("/", request.url);
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const caseId = searchParams.get("caseId");
@@ -32,5 +48,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  return NextResponse.redirect(redirect);
+  return NextResponse.redirect(resolveSafeRedirect(redirect, request));
 }

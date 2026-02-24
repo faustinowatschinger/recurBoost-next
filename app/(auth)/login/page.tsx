@@ -134,6 +134,20 @@ export default function LoginPage() {
             Sign up
           </Link>
         </p>
+
+        <p className="text-center text-xs text-gray-500 leading-5">
+          <Link href="/terms" className="text-blue-600 hover:underline">
+            Terms
+          </Link>
+          {" · "}
+          <Link href="/privacy" className="text-blue-600 hover:underline">
+            Privacy
+          </Link>
+          {" · "}
+          <Link href="/cookies" className="text-blue-600 hover:underline">
+            Cookies
+          </Link>
+        </p>
       </div>
     </div>
   );

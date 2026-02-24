@@ -1,38 +1,69 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { auth } from "@/auth";
 import { getStripeLegacy } from "@/lib/stripe/client";
 import { connectDB } from "@/lib/db/connection";
 import { StripeAccount } from "@/lib/db/models";
 import { getBillingAccessState, startTrialForUser } from "@/lib/billing/service";
+import { encrypt } from "@/lib/security/crypto";
+import {
+  STRIPE_OAUTH_STATE_COOKIE,
+  verifyStripeOAuthState,
+} from "@/lib/security/oauth-state";
+
+function redirectWithStateCleanup(
+  request: NextRequest,
+  path: string
+): NextResponse {
+  const response = NextResponse.redirect(new URL(path, request.url));
+  response.cookies.set({
+    name: STRIPE_OAUTH_STATE_COOKIE,
+    value: "",
+    path: "/",
+    maxAge: 0,
+  });
+  return response;
+}
 
 export async function GET(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return redirectWithStateCleanup(request, "/onboarding?error=unauthorized");
+  }
+
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
   const stateParam = searchParams.get("state");
-  const error = searchParams.get("error");
+  const stripeError = searchParams.get("error");
 
-  if (error) {
-    return NextResponse.redirect(
-      new URL(`/onboarding?error=${encodeURIComponent(error)}`, request.url)
+  if (stripeError) {
+    return redirectWithStateCleanup(
+      request,
+      `/onboarding?error=${encodeURIComponent(stripeError)}`
     );
   }
 
   if (!code || !stateParam) {
-    return NextResponse.redirect(
-      new URL("/onboarding?error=missing_params", request.url)
-    );
+    return redirectWithStateCleanup(request, "/onboarding?error=missing_params");
   }
 
-  let userId: string;
-  try {
-    const state = JSON.parse(
-      Buffer.from(stateParam, "base64url").toString("utf-8")
-    );
-    userId = state.userId;
-  } catch {
-    return NextResponse.redirect(
-      new URL("/onboarding?error=invalid_state", request.url)
-    );
+  const stateNonce = request.cookies.get(STRIPE_OAUTH_STATE_COOKIE)?.value;
+  if (!stateNonce) {
+    return redirectWithStateCleanup(request, "/onboarding?error=invalid_state");
   }
+
+  let parsedState: ReturnType<typeof verifyStripeOAuthState>;
+  try {
+    parsedState = verifyStripeOAuthState(stateParam, stateNonce);
+  } catch (err) {
+    console.error("Stripe OAuth state verification error:", err);
+    return redirectWithStateCleanup(request, "/onboarding?error=oauth_misconfigured");
+  }
+
+  if (!parsedState || parsedState.userId !== session.user.id) {
+    return redirectWithStateCleanup(request, "/onboarding?error=invalid_state");
+  }
+
+  const userId = parsedState.userId;
 
   try {
     const response = await getStripeLegacy().oauth.token({
@@ -41,8 +72,9 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.stripe_user_id || !response.access_token) {
-      return NextResponse.redirect(
-        new URL("/onboarding?error=stripe_response_invalid", request.url)
+      return redirectWithStateCleanup(
+        request,
+        "/onboarding?error=stripe_response_invalid"
       );
     }
 
@@ -53,8 +85,10 @@ export async function GET(request: NextRequest) {
       {
         userId,
         stripeAccountId: response.stripe_user_id,
-        accessToken: response.access_token,
-        refreshToken: response.refresh_token || undefined,
+        accessToken: encrypt(response.access_token),
+        refreshToken: response.refresh_token
+          ? encrypt(response.refresh_token)
+          : undefined,
       },
       { upsert: true, new: true }
     );
@@ -65,21 +99,26 @@ export async function GET(request: NextRequest) {
       autoExpireTrial: true,
     });
     if (!billing.canAccessProduct) {
-      return NextResponse.redirect(new URL("/billing", request.url));
+      return redirectWithStateCleanup(request, "/billing");
     }
 
-    // Register webhooks for the connected account
+    const appBaseUrl = process.env.NEXTAUTH_URL || request.nextUrl.origin;
+
+    // Register webhooks for the connected account.
     try {
-      const webhookEndpoint = await getStripeLegacy().webhookEndpoints.create({
-        url: `${process.env.NEXTAUTH_URL}/api/stripe/webhooks`,
-        enabled_events: [
-          "invoice.payment_failed",
-          "invoice.paid",
-          "customer.subscription.updated",
-        ],
-      }, {
-        stripeAccount: response.stripe_user_id,
-      });
+      const webhookEndpoint = await getStripeLegacy().webhookEndpoints.create(
+        {
+          url: `${appBaseUrl}/api/stripe/webhooks`,
+          enabled_events: [
+            "invoice.payment_failed",
+            "invoice.paid",
+            "customer.subscription.updated",
+          ],
+        },
+        {
+          stripeAccount: response.stripe_user_id,
+        }
+      );
 
       await StripeAccount.findOneAndUpdate(
         { userId },
@@ -87,16 +126,12 @@ export async function GET(request: NextRequest) {
       );
     } catch (webhookError) {
       console.error("Error registering webhooks:", webhookError);
-      // Don't fail the connection if webhook registration fails
+      // Do not fail the connection if webhook registration fails.
     }
 
-    return NextResponse.redirect(
-      new URL("/onboarding?success=true", request.url)
-    );
+    return redirectWithStateCleanup(request, "/onboarding?success=true");
   } catch (err) {
     console.error("Stripe OAuth error:", err);
-    return NextResponse.redirect(
-      new URL("/onboarding?error=oauth_failed", request.url)
-    );
+    return redirectWithStateCleanup(request, "/onboarding?error=oauth_failed");
   }
 }

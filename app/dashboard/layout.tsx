@@ -2,13 +2,14 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { DashboardNav } from "@/components/dashboard/DashboardNav";
 import { getBillingAccessState } from "@/lib/billing/service";
+import { isMockModeEnabled } from "@/lib/security/runtime";
 
 export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const isMock = process.env.MOCK_DATA === "true";
+  const isMock = isMockModeEnabled;
   let userName = "Mock User";
 
   if (!isMock) {

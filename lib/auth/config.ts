@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { randomUUID } from "node:crypto";
 import { connectDB } from "@/lib/db/connection";
 import { User } from "@/lib/db/models";
+import { consumeRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
 const authUrl = process.env.NEXTAUTH_URL || process.env.AUTH_URL || "";
 const isLocalAuthUrl =
@@ -19,12 +20,26 @@ const providers: NextAuthConfig["providers"] = [
       email: { label: "Email", type: "email" },
       password: { label: "Password", type: "password" },
     },
-    async authorize(credentials) {
+    async authorize(credentials, request) {
       if (!credentials?.email || !credentials?.password) return null;
+      const email = String(credentials.email).trim().toLowerCase();
+      const ip = request?.headers ? getClientIp(request.headers) : "unknown";
+
+      const ipLimit = consumeRateLimit(`login:ip:${ip}`, {
+        maxAttempts: 50,
+        windowMs: 10 * 60 * 1000,
+        blockMs: 15 * 60 * 1000,
+      });
+      const emailLimit = consumeRateLimit(`login:email:${email}`, {
+        maxAttempts: 10,
+        windowMs: 10 * 60 * 1000,
+        blockMs: 15 * 60 * 1000,
+      });
+      if (!ipLimit.allowed || !emailLimit.allowed) return null;
 
       await connectDB();
 
-      const user = await User.findOne({ email: credentials.email });
+      const user = await User.findOne({ email });
       if (!user) return null;
 
       const isValid = await bcrypt.compare(

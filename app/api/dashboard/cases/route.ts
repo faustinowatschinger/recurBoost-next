@@ -4,9 +4,10 @@ import { connectDB } from "@/lib/db/connection";
 import { RecoveryCase } from "@/lib/db/models";
 import { mockCases } from "@/lib/mock-data";
 import { requireBillingAccess } from "@/lib/billing/guards";
+import { isMockModeEnabled } from "@/lib/security/runtime";
 
 export async function GET() {
-  if (process.env.MOCK_DATA === "true") {
+  if (isMockModeEnabled) {
     return NextResponse.json(mockCases);
   }
 

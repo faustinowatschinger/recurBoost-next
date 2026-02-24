@@ -9,6 +9,27 @@ interface TrialEndedEmailParams {
   reachedMinimumCharge: boolean;
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function sanitizeHttpUrl(url: string): string {
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return parsed.toString();
+    }
+  } catch {
+    // invalid url
+  }
+  return "#";
+}
+
 function formatUsd(amount: number): string {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -20,22 +41,23 @@ function formatUsd(amount: number): string {
 export async function sendTrialEndedBillingEmail(
   params: TrialEndedEmailParams
 ): Promise<boolean> {
-  const brand = params.companyName?.trim() || "RecurBoost";
+  const brand = escapeHtml(params.companyName?.trim() || "RecurBoost");
   const recovered = formatUsd(params.recoveredAmount);
   const planPrice = formatUsd(BILLING_PLAN_AMOUNT_USD);
+  const safePaymentUrl = escapeHtml(sanitizeHttpUrl(params.paymentUrl));
 
   const subject = params.reachedMinimumCharge
     ? `Your trial has ended: you recovered ${recovered}`
     : `Your trial has ended: you recovered ${recovered} (no charge)`;
 
   const ctaHtml = params.reachedMinimumCharge
-    ? `<a href="${params.paymentUrl}" style="display:inline-block;margin-top:18px;padding:12px 20px;background:#111827;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;">
+    ? `<a href="${safePaymentUrl}" style="display:inline-block;margin-top:18px;padding:12px 20px;background:#111827;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:600;">
         Activate plan ${planPrice}/mo
       </a>`
     : `<p style="margin-top:14px;color:#374151;">
         This month you recovered less than ${planPrice}, so there's no charge.
       </p>
-      <a href="${params.paymentUrl}" style="display:inline-block;margin-top:12px;padding:10px 16px;background:#f4f4f5;color:#111827;text-decoration:none;border-radius:8px;font-weight:600;">
+      <a href="${safePaymentUrl}" style="display:inline-block;margin-top:12px;padding:10px 16px;background:#f4f4f5;color:#111827;text-decoration:none;border-radius:8px;font-weight:600;">
         View summary and plan
       </a>`;
 

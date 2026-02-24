@@ -2,9 +2,23 @@ import { NextResponse, type NextRequest } from "next/server";
 import { connectDB } from "@/lib/db/connection";
 import { RecoveryCase } from "@/lib/db/models";
 import { verifyRecoveryToken, generateFreshPortalUrl } from "@/lib/recovery/engine";
+import { consumeRateLimit, getClientIp } from "@/lib/security/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
+    const ip = getClientIp(request.headers);
+    const rate = consumeRateLimit(`recovery:portal:${ip}`, {
+      maxAttempts: 60,
+      windowMs: 60 * 1000,
+      blockMs: 5 * 60 * 1000,
+    });
+    if (!rate.allowed) {
+      return NextResponse.json(
+        { error: "Too many requests. Try again later." },
+        { status: 429 }
+      );
+    }
+
     const { caseId, token } = await request.json();
 
     if (!caseId || !token) {

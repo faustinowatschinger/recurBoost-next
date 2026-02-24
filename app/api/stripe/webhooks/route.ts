@@ -10,6 +10,7 @@ import { decrypt } from "@/lib/security/crypto";
 import { classifyFailure, isHardDecline, isRetryableFailure } from "@/lib/stripe/classify";
 import { triggerRecoverySequence } from "@/lib/recovery/engine";
 import { getPostHogClient } from "@/lib/posthog-server";
+import { canUseTestOverrideEmail } from "@/lib/security/runtime";
 
 /**
  * Resolve the PaymentIntegration that owns this webhook event.
@@ -149,6 +150,9 @@ async function handlePaymentFailed(
   const smartRetryScheduledFor = retryable
     ? new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h from now
     : undefined;
+  const testOverrideEmail = canUseTestOverrideEmail()
+    ? process.env.TEST_OVERRIDE_EMAIL
+    : undefined;
 
   const recoveryCase = await RecoveryCase.create({
     userId: integration.userId,
@@ -159,7 +163,8 @@ async function handlePaymentFailed(
       (typeof invoiceData.subscription === "string"
         ? invoiceData.subscription
         : invoiceData.subscription?.id) || undefined,
-    customerEmail: process.env.TEST_OVERRIDE_EMAIL || invoice.customer_email || "unknown@test.local",
+    customerEmail:
+      testOverrideEmail || invoice.customer_email || "unknown@test.local",
     amount: invoice.amount_due / 100,
     currency: invoice.currency,
     failureType,

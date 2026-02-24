@@ -3,9 +3,10 @@ import { auth } from "@/auth";
 import { calculateMetrics } from "@/lib/utils/metrics";
 import { mockMetrics } from "@/lib/mock-data";
 import { requireBillingAccess } from "@/lib/billing/guards";
+import { isMockModeEnabled } from "@/lib/security/runtime";
 
 export async function GET() {
-  if (process.env.MOCK_DATA === "true") {
+  if (isMockModeEnabled) {
     return NextResponse.json(mockMetrics);
   }
 
