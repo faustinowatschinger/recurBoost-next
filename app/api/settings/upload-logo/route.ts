@@ -3,11 +3,9 @@ import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/connection";
 import { User } from "@/lib/db/models";
 import { requireBillingAccess } from "@/lib/billing/guards";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
 
 const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
-const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+const MAX_SIZE = 512 * 1024; // 512KB — logos should be small
 
 export async function POST(request: NextRequest) {
   const session = await auth();
@@ -46,25 +44,18 @@ export async function POST(request: NextRequest) {
 
   if (file.size > MAX_SIZE) {
     return NextResponse.json(
-      { error: "El archivo es muy grande. Máximo 2MB." },
+      { error: "El archivo es muy grande. Máximo 512KB." },
       { status: 400 }
     );
   }
 
-  const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-  const filename = `${session.user.id}-${Date.now()}.${ext}`;
-
-  const uploadsDir = path.join(process.cwd(), "public", "uploads", "logos");
-  await mkdir(uploadsDir, { recursive: true });
-
+  // Convert to base64 data URI — works in any deployment (Vercel, Docker, etc.)
   const buffer = Buffer.from(await file.arrayBuffer());
-  const filePath = path.join(uploadsDir, filename);
-  await writeFile(filePath, buffer);
-
-  const logoUrl = `/uploads/logos/${filename}`;
+  const base64 = buffer.toString("base64");
+  const dataUri = `data:${file.type};base64,${base64}`;
 
   await connectDB();
-  await User.findByIdAndUpdate(session.user.id, { companyLogo: logoUrl });
+  await User.findByIdAndUpdate(session.user.id, { companyLogo: dataUri });
 
-  return NextResponse.json({ url: logoUrl });
+  return NextResponse.json({ url: dataUri });
 }

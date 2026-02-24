@@ -284,7 +284,7 @@ export default function SettingsPage() {
                 />
               </label>
               <p className="mt-1.5 text-xs text-text-muted">
-                PNG, JPG, WebP o SVG. Máximo 2MB.
+                PNG, JPG, WebP o SVG. Máximo 512KB.
               </p>
             </div>
             {companyLogo && (
