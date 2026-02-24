@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import posthog from "posthog-js";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -25,25 +26,30 @@ export default function LoginPage() {
     setError("");
 
     const formData = new FormData(e.currentTarget);
+    const email = formData.get("email") as string;
 
     const result = await signIn("credentials", {
-      email: formData.get("email"),
+      email,
       password: formData.get("password"),
       redirect: false,
     });
 
     if (result?.error) {
       setError("Incorrect email or password");
+      posthog.capture("login_failed", { method: "credentials" });
       setLoading(false);
       return;
     }
 
+    posthog.identify(email, { email });
+    posthog.capture("user_logged_in", { method: "credentials" });
     router.push("/dashboard");
   }
 
   async function handleGoogleLogin() {
     setGoogleLoading(true);
     setError("");
+    posthog.capture("user_logged_in_google", { method: "google" });
     await signIn("google", { callbackUrl: "/dashboard" });
     setGoogleLoading(false);
   }

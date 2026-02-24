@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { connectDB } from "@/lib/db/connection";
 import { User } from "@/lib/db/models";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST(request: Request) {
   try {
@@ -38,6 +39,10 @@ export async function POST(request: Request) {
       passwordHash,
       companyName,
     });
+
+    const posthog = getPostHogClient();
+    posthog.identify({ distinctId: user.email, properties: { email: user.email, company_name: companyName } });
+    posthog.capture({ distinctId: user.email, event: "user_registered_server", properties: { email: user.email, company_name: companyName, source: "api" } });
 
     return NextResponse.json(
       { id: user._id, email: user.email },

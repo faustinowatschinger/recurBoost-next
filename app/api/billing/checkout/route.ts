@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { createBillingCheckoutSession } from "@/lib/billing/service";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export async function POST() {
   const session = await auth();
@@ -10,6 +11,12 @@ export async function POST() {
 
   try {
     const url = await createBillingCheckoutSession(session.user.id);
+    const posthog = getPostHogClient();
+    posthog.capture({
+      distinctId: session.user.email ?? session.user.id,
+      event: "billing_checkout_started",
+      properties: { user_id: session.user.id },
+    });
     return NextResponse.json({ url });
   } catch (err) {
     const code = err instanceof Error ? err.message : "UNKNOWN";

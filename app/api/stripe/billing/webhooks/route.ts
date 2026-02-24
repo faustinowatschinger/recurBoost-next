@@ -4,6 +4,7 @@ import {
   handleBillingCheckoutCompleted,
   syncUserFromBillingSubscription,
 } from "@/lib/billing/service";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 function getBillingStripe(): Stripe {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -42,11 +43,21 @@ export async function POST(request: NextRequest) {
 
   try {
     switch (event.type) {
-      case "checkout.session.completed":
-        await handleBillingCheckoutCompleted(
-          event.data.object as Stripe.Checkout.Session
-        );
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        await handleBillingCheckoutCompleted(session);
+        const posthog = getPostHogClient();
+        posthog.capture({
+          distinctId: session.customer_email ?? session.customer as string ?? "unknown",
+          event: "billing_subscription_activated",
+          properties: {
+            stripe_customer_id: session.customer as string,
+            amount_total: session.amount_total,
+            currency: session.currency,
+          },
+        });
         break;
+      }
 
       case "customer.subscription.created":
       case "customer.subscription.updated":

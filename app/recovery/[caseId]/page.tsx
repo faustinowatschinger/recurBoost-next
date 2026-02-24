@@ -1,6 +1,7 @@
 "use client";
 
 import { useParams, useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import { useState } from "react";
 
 export default function RecoveryLandingPage() {
@@ -14,6 +15,7 @@ export default function RecoveryLandingPage() {
   async function handleUpdatePayment() {
     setLoading(true);
     setError("");
+    posthog.capture("recovery_portal_opened", { case_id: caseId });
 
     try {
       const res = await fetch("/api/recovery/portal-redirect", {
@@ -24,6 +26,10 @@ export default function RecoveryLandingPage() {
 
       if (!res.ok) {
         const data = await res.json();
+        posthog.capture("recovery_portal_redirect_failed", {
+          case_id: caseId,
+          error: data.error || "unknown",
+        });
         setError(data.error || "We couldn't generate the link. Please try again.");
         setLoading(false);
         return;

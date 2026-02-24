@@ -3,6 +3,7 @@
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import posthog from "posthog-js";
 
 export default function OnboardingPage() {
   return (
@@ -92,6 +93,9 @@ function OnboardingContent() {
       }
 
       setApiKey("");
+      posthog.capture('stripe_api_key_connected', {
+        webhook_auto_configured: !!data.webhookConfigured,
+      });
       if (data.webhookConfigured) {
         setWebhookAutoConfigured(true);
         setStep(4);
@@ -123,6 +127,7 @@ function OnboardingContent() {
         return;
       }
 
+      posthog.capture('stripe_webhook_configured');
       setWebhookSecret("");
       setStep(4);
     } catch {
@@ -137,6 +142,7 @@ function OnboardingContent() {
     try {
       const res = await fetch("/api/stripe/baseline", { method: "POST" });
       if (res.ok) {
+        posthog.capture('onboarding_baseline_imported');
         router.push("/dashboard");
       }
     } catch {

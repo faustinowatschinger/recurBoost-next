@@ -9,6 +9,7 @@ import {
 import { decrypt } from "@/lib/security/crypto";
 import { classifyFailure, isHardDecline, isRetryableFailure } from "@/lib/stripe/classify";
 import { triggerRecoverySequence } from "@/lib/recovery/engine";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 /**
  * Resolve the PaymentIntegration that owns this webhook event.
@@ -169,6 +170,21 @@ async function handlePaymentFailed(
     smartRetryResult: retryable ? undefined : "skipped",
   });
 
+  const posthog = getPostHogClient();
+  posthog.capture({
+    distinctId: recoveryCase.customerEmail,
+    event: "payment_failed_received",
+    properties: {
+      amount: recoveryCase.amount,
+      currency: recoveryCase.currency,
+      failure_type: failureType,
+      decline_code: declineCode,
+      hard_decline: hardDecline,
+      retryable: retryable,
+      case_id: String(recoveryCase._id),
+    },
+  });
+
   // For retryable failures: wait for smart retry (cron will handle it)
   // For non-retryable, non-hard-decline: send email immediately
   if (status === "active" && !retryable) {
@@ -193,4 +209,15 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   recoveryCase.recoveredAt = new Date();
   recoveryCase.status = "recovered";
   await recoveryCase.save();
+
+  const posthog = getPostHogClient();
+  posthog.capture({
+    distinctId: recoveryCase.customerEmail,
+    event: "payment_recovered",
+    properties: {
+      amount_recovered: recoveryCase.recoveredAmount,
+      currency: recoveryCase.currency,
+      case_id: String(recoveryCase._id),
+    },
+  });
 }

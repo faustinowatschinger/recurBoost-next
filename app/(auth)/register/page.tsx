@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
+import posthog from "posthog-js";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -54,12 +55,15 @@ export default function RegisterPage() {
       return;
     }
 
+    posthog.identify(email, { email, company_name: companyName });
+    posthog.capture("user_signed_up", { method: "credentials", company_name: companyName });
     router.push("/onboarding");
   }
 
   async function handleGoogleRegister() {
     setGoogleLoading(true);
     setError("");
+    posthog.capture("user_signed_up_google", { method: "google" });
     await signIn("google", { callbackUrl: "/onboarding" });
     setGoogleLoading(false);
   }
