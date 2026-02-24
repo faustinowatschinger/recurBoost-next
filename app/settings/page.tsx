@@ -40,6 +40,7 @@ export default function SettingsPage() {
   const [actionError, setActionError] = useState("");
   const [webhookSecret, setWebhookSecret] = useState("");
   const [savingWebhook, setSavingWebhook] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     fetchSettings();
@@ -229,26 +230,76 @@ export default function SettingsPage() {
         </div>
 
         <div>
-          <label htmlFor="companyLogo" className="block text-sm font-medium text-foreground">
-            URL del logo
+          <label className="block text-sm font-medium text-foreground">
+            Logo de la empresa
           </label>
-          <input
-            id="companyLogo"
-            type="url"
-            value={companyLogo}
-            onChange={(e) => setCompanyLogo(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            placeholder="https://tu-empresa.com/logo.png"
-          />
+          <div className="mt-1 flex items-center gap-4">
+            {companyLogo && (
+              <div className="p-2 bg-background border border-card-border rounded-lg">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={companyLogo} alt="Logo actual" className="max-h-12" />
+              </div>
+            )}
+            <div className="flex-1">
+              <label
+                htmlFor="logoUpload"
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-card-border cursor-pointer transition-colors ${
+                  uploadingLogo
+                    ? "opacity-50 cursor-not-allowed bg-card text-text-muted"
+                    : "bg-card text-foreground hover:bg-card-border/20"
+                }`}
+              >
+                {uploadingLogo ? "Subiendo..." : companyLogo ? "Cambiar logo" : "Subir logo"}
+                <input
+                  id="logoUpload"
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                  className="sr-only"
+                  disabled={uploadingLogo}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setUploadingLogo(true);
+                    try {
+                      const formData = new FormData();
+                      formData.append("logo", file);
+                      const res = await fetch("/api/settings/upload-logo", {
+                        method: "POST",
+                        body: formData,
+                      });
+                      if (res.ok) {
+                        const { url } = await res.json();
+                        setCompanyLogo(url);
+                      } else {
+                        const result = await res.json();
+                        alert(result.error || "Error al subir el logo");
+                      }
+                    } catch {
+                      alert("Error de conexión al subir el logo");
+                    } finally {
+                      setUploadingLogo(false);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+              </label>
+              <p className="mt-1.5 text-xs text-text-muted">
+                PNG, JPG, WebP o SVG. Máximo 2MB.
+              </p>
+            </div>
+            {companyLogo && (
+              <button
+                type="button"
+                onClick={() => setCompanyLogo("")}
+                className="text-xs text-danger hover:text-danger/80 transition-colors"
+              >
+                Quitar
+              </button>
+            )}
+          </div>
           <p className="mt-1 text-xs text-text-muted">
             Se muestra en el header de los emails de recuperación.
           </p>
-          {companyLogo && (
-            <div className="mt-2 p-3 bg-background border border-card-border rounded-lg inline-block">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={companyLogo} alt="Logo preview" className="max-h-12" />
-            </div>
-          )}
         </div>
 
         {/* Brand Colors */}
