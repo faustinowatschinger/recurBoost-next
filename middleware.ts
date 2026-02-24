@@ -1,18 +1,22 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
   if (process.env.MOCK_DATA === "true") {
     return NextResponse.next();
   }
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
-  });
+  const hasSessionCookie = request.cookies
+    .getAll()
+    .some(
+      ({ name }) =>
+        name === "authjs.session-token" ||
+        name === "__Secure-authjs.session-token" ||
+        name.startsWith("authjs.session-token.") ||
+        name.startsWith("__Secure-authjs.session-token.")
+    );
 
-  if (!token) {
+  if (!hasSessionCookie) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
