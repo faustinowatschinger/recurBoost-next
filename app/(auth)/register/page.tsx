@@ -30,7 +30,7 @@ export default function RegisterPage() {
 
     if (!res.ok) {
       const data = await res.json();
-      setError(data.error || "Error al crear la cuenta");
+      setError(data.error || "Failed to create account");
       setLoading(false);
       return;
     }
@@ -42,7 +42,7 @@ export default function RegisterPage() {
     });
 
     if (result?.error) {
-      setError("Cuenta creada, pero hubo un error al ingresar. Probá iniciar sesión.");
+      setError("Account created, but there was an error signing in. Please try logging in.");
       setLoading(false);
       return;
     }
@@ -61,8 +61,8 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
       <div className="w-full max-w-md p-8 space-y-6">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-[var(--foreground)]">Crear cuenta</h1>
-          <p className="mt-2 text-sm text-gray-500">Empezá a recuperar tus ventas fallidas</p>
+          <h1 className="text-2xl font-bold text-[var(--foreground)]">Create account</h1>
+          <p className="mt-2 text-sm text-gray-500">Start recovering your failed payments</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -70,7 +70,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="companyName" className="block text-sm font-medium text-[var(--foreground)]">
-              Nombre de la empresa
+              Company name
             </label>
             <input
               id="companyName"
@@ -96,7 +96,7 @@ export default function RegisterPage() {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-[var(--foreground)]">
-              Contraseña
+              Password
             </label>
             <input
               id="password"
@@ -106,7 +106,7 @@ export default function RegisterPage() {
               minLength={8}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-[var(--background)] text-[var(--foreground)]"
             />
-            <p className="mt-1 text-xs text-gray-400">Mínimo 8 caracteres</p>
+            <p className="mt-1 text-xs text-gray-400">Minimum 8 characters</p>
           </div>
 
           <button
@@ -114,7 +114,7 @@ export default function RegisterPage() {
             disabled={loading || googleLoading}
             className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Creando cuenta..." : "Crear cuenta"}
+            {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
 
@@ -125,7 +125,7 @@ export default function RegisterPage() {
                 <div className="w-full border-t border-gray-300" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-[var(--background)] px-2 text-gray-500">o</span>
+                <span className="bg-[var(--background)] px-2 text-gray-500">or</span>
               </div>
             </div>
 
@@ -141,15 +141,15 @@ export default function RegisterPage() {
                   d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6s2.7-6 6-6c1.9 0 3.2.8 3.9 1.5l2.7-2.6C16.9 3.2 14.7 2.2 12 2.2 6.8 2.2 2.6 6.4 2.6 11.6s4.2 9.4 9.4 9.4c5.4 0 9-3.8 9-9.1 0-.6-.1-1.2-.2-1.7H12Z"
                 />
               </svg>
-              {googleLoading ? "Conectando..." : "Continuar con Google"}
+              {googleLoading ? "Connecting..." : "Continue with Google"}
             </button>
           </>
         )}
 
         <p className="text-center text-sm text-gray-500">
-          ¿Ya tenés cuenta?{" "}
+          Already have an account?{" "}
           <Link href="/login" className="text-blue-600 hover:underline">
-            Iniciá sesión
+            Sign in
           </Link>
         </p>
       </div>

@@ -99,7 +99,7 @@ export default function SettingsPage() {
   }
 
   async function handleDisconnect() {
-    if (!confirm("¿Estás seguro de que querés desconectar Stripe? Se detendrán los emails de recuperación.")) {
+    if (!confirm("Are you sure you want to disconnect Stripe? Recovery emails will stop.")) {
       return;
     }
 
@@ -112,10 +112,10 @@ export default function SettingsPage() {
         await fetchSettings();
       } else {
         const result = await res.json();
-        setActionError(result.error || "Error al desconectar");
+        setActionError(result.error || "Failed to disconnect");
       }
     } catch {
-      setActionError("Error de conexión");
+      setActionError("Connection error");
     } finally {
       setDisconnecting(false);
     }
@@ -138,10 +138,10 @@ export default function SettingsPage() {
         await fetchSettings();
       } else {
         const result = await res.json();
-        setActionError(result.error || "Error al guardar webhook secret");
+        setActionError(result.error || "Failed to save webhook secret");
       }
     } catch {
-      setActionError("Error de conexión");
+      setActionError("Connection error");
     } finally {
       setSavingWebhook(false);
     }
@@ -165,10 +165,10 @@ export default function SettingsPage() {
         await fetchSettings();
       } else {
         const result = await res.json();
-        setActionError(result.error || "Error al rotar credenciales");
+        setActionError(result.error || "Failed to rotate credentials");
       }
     } catch {
-      setActionError("Error de conexión");
+      setActionError("Connection error");
     } finally {
       setRotating(false);
     }
@@ -177,7 +177,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <p className="text-text-muted">Cargando configuración...</p>
+        <p className="text-text-muted">Loading settings...</p>
       </div>
     );
   }
@@ -185,22 +185,22 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Configuración</h1>
+        <h1 className="text-2xl font-bold text-foreground">Settings</h1>
         <p className="text-sm text-text-muted mt-1">
-          Personalizá los emails de recuperación que reciben tus clientes
+          Customize the recovery emails your customers receive
         </p>
       </div>
 
       {/* Company Settings */}
       <form onSubmit={handleSave} className="bg-card border border-card-border rounded-xl p-6 space-y-4">
-        <h2 className="font-semibold text-foreground">Personalización de emails</h2>
+        <h2 className="font-semibold text-foreground">Email customization</h2>
         <p className="text-sm text-text-muted">
-          Esta información aparece en los emails de recuperación enviados a tus clientes.
+          This information appears in the recovery emails sent to your customers.
         </p>
 
         <div>
           <label htmlFor="companyName" className="block text-sm font-medium text-foreground">
-            Nombre de la empresa
+            Company name
           </label>
           <input
             id="companyName"
@@ -208,13 +208,13 @@ export default function SettingsPage() {
             value={companyName}
             onChange={(e) => setCompanyName(e.target.value)}
             className="mt-1 block w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            placeholder="Tu Empresa S.A."
+            placeholder="Acme Inc."
           />
         </div>
 
         <div>
           <label htmlFor="senderName" className="block text-sm font-medium text-foreground">
-            Nombre del remitente
+            Sender name
           </label>
           <input
             id="senderName"
@@ -222,22 +222,22 @@ export default function SettingsPage() {
             value={senderName}
             onChange={(e) => setSenderName(e.target.value)}
             className="mt-1 block w-full px-3 py-2 bg-background border border-card-border rounded-lg text-foreground placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-            placeholder="Equipo de Soporte"
+            placeholder="Support Team"
           />
           <p className="mt-1 text-xs text-text-muted">
-            Aparece como &quot;De: Nombre &lt;email&gt;&quot; en los emails
+            Shown as &quot;From: Name &lt;email&gt;&quot; in emails
           </p>
         </div>
 
         <div>
           <label className="block text-sm font-medium text-foreground">
-            Logo de la empresa
+            Company logo
           </label>
           <div className="mt-1 flex items-center gap-4">
             {companyLogo && (
               <div className="p-2 bg-background border border-card-border rounded-lg">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={companyLogo} alt="Logo actual" className="max-h-12" />
+                <img src={companyLogo} alt="Current logo" className="max-h-12" />
               </div>
             )}
             <div className="flex-1">
@@ -249,7 +249,7 @@ export default function SettingsPage() {
                     : "bg-card text-foreground hover:bg-card-border/20"
                 }`}
               >
-                {uploadingLogo ? "Subiendo..." : companyLogo ? "Cambiar logo" : "Subir logo"}
+                {uploadingLogo ? "Uploading..." : companyLogo ? "Change logo" : "Upload logo"}
                 <input
                   id="logoUpload"
                   type="file"
@@ -272,10 +272,10 @@ export default function SettingsPage() {
                         setCompanyLogo(url);
                       } else {
                         const result = await res.json();
-                        alert(result.error || "Error al subir el logo");
+                        alert(result.error || "Failed to upload logo");
                       }
                     } catch {
-                      alert("Error de conexión al subir el logo");
+                      alert("Connection error while uploading logo");
                     } finally {
                       setUploadingLogo(false);
                       e.target.value = "";
@@ -284,7 +284,7 @@ export default function SettingsPage() {
                 />
               </label>
               <p className="mt-1.5 text-xs text-text-muted">
-                PNG, JPG, WebP o SVG. Máximo 512KB.
+                PNG, JPG, WebP or SVG. Max 512KB.
               </p>
             </div>
             {companyLogo && (
@@ -293,22 +293,22 @@ export default function SettingsPage() {
                 onClick={() => setCompanyLogo("")}
                 className="text-xs text-danger hover:text-danger/80 transition-colors"
               >
-                Quitar
+                Remove
               </button>
             )}
           </div>
           <p className="mt-1 text-xs text-text-muted">
-            Se muestra en el header de los emails de recuperación.
+            Displayed in the header of recovery emails.
           </p>
         </div>
 
         {/* Brand Colors */}
         <div className="pt-2 border-t border-card-border">
-          <h3 className="text-sm font-medium text-foreground mb-3">Colores del email</h3>
+          <h3 className="text-sm font-medium text-foreground mb-3">Email colors</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label htmlFor="brandColor" className="block text-xs text-text-muted mb-1">
-                Color de marca (header/texto)
+                Brand color (header/text)
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -329,7 +329,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <label htmlFor="brandButtonColor" className="block text-xs text-text-muted mb-1">
-                Color del botón
+                Button color
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -350,7 +350,7 @@ export default function SettingsPage() {
             </div>
             <div>
               <label htmlFor="brandButtonTextColor" className="block text-xs text-text-muted mb-1">
-                Texto del botón
+                Button text
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -374,7 +374,7 @@ export default function SettingsPage() {
 
         {/* Email Preview */}
         <div className="pt-2 border-t border-card-border">
-          <h3 className="text-sm font-medium text-foreground mb-3">Preview del email</h3>
+          <h3 className="text-sm font-medium text-foreground mb-3">Email preview</h3>
           <div className="rounded-lg overflow-hidden border border-card-border">
             <div className="bg-[#f9fafb] p-4">
               <div className="max-w-md mx-auto bg-white rounded-lg border border-[#e5e7eb] p-6">
@@ -383,13 +383,13 @@ export default function SettingsPage() {
                   <img src={companyLogo} alt="Logo" className="max-h-12 mb-4" />
                 ) : (
                   <p className="text-lg font-semibold mb-4" style={{ color: brandColor }}>
-                    {companyName || "Tu Empresa"}
+                    {companyName || "Your Company"}
                   </p>
                 )}
-                <p className="text-sm text-[#374151] mb-2">Hola,</p>
+                <p className="text-sm text-[#374151] mb-2">Hi,</p>
                 <p className="text-sm text-[#374151] mb-4">
-                  Hubo un problema al procesar tu pago de <strong>$49.00</strong>.
-                  Por favor, revisá tu método de pago.
+                  There was an issue processing your payment of <strong>$49.00</strong>.
+                  Please update your payment method.
                 </p>
                 <span
                   className="inline-block px-5 py-2.5 rounded-md text-sm font-semibold"
@@ -398,10 +398,10 @@ export default function SettingsPage() {
                     color: brandButtonTextColor,
                   }}
                 >
-                  Actualizar método de pago
+                  Update payment method
                 </span>
                 <p className="mt-6 text-xs text-[#9ca3af]">
-                  Este email fue enviado por {companyName || "Tu Empresa"}.
+                  This email was sent by {companyName || "Your Company"}.
                 </p>
               </div>
             </div>
@@ -414,17 +414,17 @@ export default function SettingsPage() {
             disabled={saving}
             className="px-4 py-2 bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? "Guardando..." : "Guardar cambios"}
+            {saving ? "Saving..." : "Save changes"}
           </button>
           {saved && (
-            <span className="text-sm text-primary">Guardado correctamente</span>
+            <span className="text-sm text-primary">Saved successfully</span>
           )}
         </div>
       </form>
 
       {/* Stripe Connection Info */}
       <div className="bg-card border border-card-border rounded-xl p-6 space-y-4">
-        <h2 className="font-semibold text-foreground">Conexión con Stripe</h2>
+        <h2 className="font-semibold text-foreground">Stripe connection</h2>
 
         {actionError && (
           <div className="p-3 text-sm text-danger bg-danger/10 border border-danger/20 rounded-lg">
@@ -436,7 +436,7 @@ export default function SettingsPage() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-primary rounded-full" />
-              <span className="text-sm text-foreground">Conectado (BYOK)</span>
+              <span className="text-sm text-foreground">Connected (BYOK)</span>
             </div>
 
             <div className="text-sm text-text-muted space-y-1">
@@ -449,9 +449,9 @@ export default function SettingsPage() {
               <p>
                 Webhook:{" "}
                 {data.stripe.webhookConfigured ? (
-                  <span className="text-primary">Configurado</span>
+                  <span className="text-primary">Configured</span>
                 ) : (
-                  <span className="text-warning">No configurado — pegá el signing secret abajo</span>
+                  <span className="text-warning">Not configured — paste the signing secret below</span>
                 )}
               </p>
               {data.stripe.baselineRecoveryRate != null && (
@@ -459,7 +459,7 @@ export default function SettingsPage() {
                   Baseline Recovery Rate: <strong className="text-foreground">{data.stripe.baselineRecoveryRate}%</strong>
                   {data.stripe.baselineCalculatedAt && (
                     <span className="ml-2 text-xs text-text-muted">
-                      (calculado {new Date(data.stripe.baselineCalculatedAt).toLocaleDateString("es-AR")})
+                      (calculated {new Date(data.stripe.baselineCalculatedAt).toLocaleDateString("en-US")})
                     </span>
                   )}
                 </p>
@@ -469,10 +469,37 @@ export default function SettingsPage() {
             {/* Webhook Secret (if not configured) */}
             {!data.stripe.webhookConfigured && (
               <form onSubmit={handleSaveWebhookSecret} className="p-4 bg-background border border-warning/30 rounded-lg space-y-3">
-                <p className="text-sm font-medium text-foreground">Configurar Webhook Secret</p>
+                <p className="text-sm font-medium text-foreground">Set up Webhook</p>
                 <p className="text-xs text-text-muted">
-                  Ejecutá <code className="bg-card border border-card-border px-1 rounded">stripe listen --forward-to localhost:3000/api/stripe/webhooks</code> y pegá el signing secret acá.
+                  To detect failed payments, you need to create a webhook in Stripe:
                 </p>
+                <ol className="text-xs text-text-muted space-y-1.5 list-decimal list-inside">
+                  <li>
+                    Go to{" "}
+                    <a
+                      href="https://dashboard.stripe.com/webhooks/create"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary underline hover:text-primary-hover"
+                    >
+                      Stripe Dashboard &gt; Webhooks
+                    </a>
+                  </li>
+                  <li>
+                    In <strong className="text-foreground">Endpoint URL</strong> paste:{" "}
+                    <code className="bg-card border border-card-border px-1.5 py-0.5 rounded text-foreground select-all">
+                      {typeof window !== "undefined" ? window.location.origin : ""}/api/stripe/webhooks
+                    </code>
+                  </li>
+                  <li>
+                    In <strong className="text-foreground">Events</strong> select:{" "}
+                    <code className="bg-card border border-card-border px-1 rounded text-foreground">invoice.payment_failed</code>,{" "}
+                    <code className="bg-card border border-card-border px-1 rounded text-foreground">invoice.paid</code>,{" "}
+                    <code className="bg-card border border-card-border px-1 rounded text-foreground">customer.subscription.updated</code>
+                  </li>
+                  <li>Click <strong className="text-foreground">Add endpoint</strong></li>
+                  <li>Copy the <strong className="text-foreground">Signing secret</strong> (starts with <code className="bg-card border border-card-border px-1 rounded">whsec_</code>) and paste it below</li>
+                </ol>
                 <input
                   type="password"
                   value={webhookSecret}
@@ -486,7 +513,7 @@ export default function SettingsPage() {
                   disabled={savingWebhook || !webhookSecret}
                   className="px-3 py-1.5 text-sm bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                 >
-                  {savingWebhook ? "Guardando..." : "Guardar webhook secret"}
+                  {savingWebhook ? "Saving..." : "Save webhook secret"}
                 </button>
               </form>
             )}
@@ -494,12 +521,12 @@ export default function SettingsPage() {
             {/* Rotate credentials */}
             {showRotateForm ? (
               <form onSubmit={handleRotate} className="p-4 bg-background border border-card-border rounded-lg space-y-3">
-                <p className="text-sm font-medium text-foreground">Rotar API Key</p>
+                <p className="text-sm font-medium text-foreground">Rotate API Key</p>
                 <input
                   type="password"
                   value={newApiKey}
                   onChange={(e) => setNewApiKey(e.target.value)}
-                  placeholder="sk_test_... o rk_test_..."
+                  placeholder="sk_test_... or rk_test_..."
                   className="block w-full px-3 py-2 bg-card border border-card-border rounded-lg text-foreground placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
                   required
                 />
@@ -509,14 +536,14 @@ export default function SettingsPage() {
                     disabled={rotating || !newApiKey}
                     className="px-3 py-1.5 text-sm bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-50"
                   >
-                    {rotating ? "Validando..." : "Guardar nueva key"}
+                    {rotating ? "Validating..." : "Save new key"}
                   </button>
                   <button
                     type="button"
                     onClick={() => { setShowRotateForm(false); setNewApiKey(""); }}
                     className="px-3 py-1.5 text-sm text-text-muted border border-card-border rounded-lg hover:bg-card-border/20 transition-colors"
                   >
-                    Cancelar
+                    Cancel
                   </button>
                 </div>
               </form>
@@ -526,14 +553,14 @@ export default function SettingsPage() {
                   onClick={() => setShowRotateForm(true)}
                   className="px-3 py-1.5 text-sm text-primary border border-primary/30 rounded-lg hover:bg-primary/10 transition-colors"
                 >
-                  Rotar credenciales
+                  Rotate credentials
                 </button>
                 <button
                   onClick={handleDisconnect}
                   disabled={disconnecting}
                   className="px-3 py-1.5 text-sm text-danger border border-danger/30 rounded-lg hover:bg-danger/10 transition-colors disabled:opacity-50"
                 >
-                  {disconnecting ? "Desconectando..." : "Desconectar Stripe"}
+                  {disconnecting ? "Disconnecting..." : "Disconnect Stripe"}
                 </button>
               </div>
             )}
@@ -541,13 +568,13 @@ export default function SettingsPage() {
         ) : (
           <div>
             <p className="text-sm text-text-muted">
-              No tenés una cuenta de Stripe conectada.
+              You don&apos;t have a Stripe account connected.
             </p>
             <a
               href="/onboarding"
               className="mt-3 inline-block px-4 py-2 bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors"
             >
-              Ir al onboarding para conectar
+              Go to onboarding to connect
             </a>
           </div>
         )}
@@ -555,7 +582,7 @@ export default function SettingsPage() {
 
       {/* Account Info */}
       <div className="bg-card border border-card-border rounded-xl p-6 space-y-2">
-        <h2 className="font-semibold text-foreground">Cuenta</h2>
+        <h2 className="font-semibold text-foreground">Account</h2>
         <p className="text-sm text-text-muted">
           Email: <strong className="text-foreground">{data?.user?.email}</strong>
         </p>

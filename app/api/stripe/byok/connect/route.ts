@@ -9,7 +9,7 @@ import { getBillingAccessState, startTrialForUser } from "@/lib/billing/service"
 export async function POST(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let body: { apiKey: string };
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: "Body inválido" },
+      { error: "Invalid body" },
       { status: 400 }
     );
   }
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
 
   if (!apiKey || typeof apiKey !== "string") {
     return NextResponse.json(
-      { error: "Se requiere apiKey" },
+      { error: "apiKey is required" },
       { status: 400 }
     );
   }
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
   // Basic format validation for Stripe secret keys
   if (!apiKey.startsWith("sk_test_") && !apiKey.startsWith("sk_live_") && !apiKey.startsWith("rk_test_") && !apiKey.startsWith("rk_live_")) {
     return NextResponse.json(
-      { error: "La API key debe ser una Stripe Secret Key o Restricted Key válida (sk_test_*, sk_live_*, rk_test_*, rk_live_*)" },
+      { error: "The API key must be a valid Stripe Secret Key or Restricted Key (sk_test_*, sk_live_*, rk_test_*, rk_live_*)" },
       { status: 400 }
     );
   }
@@ -61,8 +61,8 @@ export async function POST(request: NextRequest) {
     }
   } catch (err) {
     const message = err instanceof Stripe.errors.StripeAuthenticationError
-      ? "API key inválida. Verificá que la key sea correcta y esté activa."
-      : "No se pudo validar la API key con Stripe. Verificá que la key tenga al menos el permiso de lectura de balance.";
+      ? "Invalid API key. Make sure the key is correct and active."
+      : "Could not validate the API key with Stripe. Make sure the key has at least the balance read permission.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error:
-          "Tu prueba ya terminó. Activá el plan para volver a usar la recuperación.",
+          "Your trial has ended. Activate the plan to continue using recovery.",
       },
       { status: 402 }
     );

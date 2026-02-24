@@ -6,7 +6,7 @@ import { requireBillingAccess } from "@/lib/billing/guards";
 export async function POST() {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -16,7 +16,7 @@ export async function POST() {
   } catch (err) {
     if (err instanceof Error && err.message === "BILLING_ACCESS_BLOCKED") {
       return NextResponse.json(
-        { error: "Cuenta cancelada. Activá un plan para continuar." },
+        { error: "Account canceled. Activate a plan to continue." },
         { status: 402 }
       );
     }

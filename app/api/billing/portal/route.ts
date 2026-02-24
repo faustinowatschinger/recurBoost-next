@@ -5,7 +5,7 @@ import { createBillingPortalSession } from "@/lib/billing/service";
 export async function POST() {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -16,7 +16,7 @@ export async function POST() {
 
     if (code === "BILLING_CUSTOMER_NOT_FOUND") {
       return NextResponse.json(
-        { error: "No se encontró cliente de billing para esta cuenta." },
+        { error: "No billing customer found for this account." },
         { status: 404 }
       );
     }

@@ -5,7 +5,7 @@ import { createBillingCheckoutSession } from "@/lib/billing/service";
 export async function POST() {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -16,7 +16,7 @@ export async function POST() {
 
     if (code === "PLAN_ALREADY_ACTIVE") {
       return NextResponse.json(
-        { error: "Tu plan ya está activo." },
+        { error: "Your plan is already active." },
         { status: 409 }
       );
     }

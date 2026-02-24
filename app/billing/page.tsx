@@ -45,40 +45,40 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
       <DashboardNav userName={session.user.name || session.user.email || ""} />
       <main className="max-w-3xl mx-auto px-4 py-8 space-y-6">
         <div>
-          <h1 className="text-2xl font-bold">Facturación</h1>
+          <h1 className="text-2xl font-bold">Billing</h1>
           <p className="text-sm text-text-muted mt-1">
-            30 días gratis sin tarjeta, luego {formatUsd(BILLING_PLAN_AMOUNT_USD)}
-            /mes.
+            {BILLING_TRIAL_DAYS} days free without a card, then {formatUsd(BILLING_PLAN_AMOUNT_USD)}
+            /mo.
           </p>
         </div>
 
         {checkoutResult === "success" && (
           <div className="p-3 rounded-lg border border-primary/30 bg-primary/10 text-sm text-primary">
-            Suscripción activada correctamente.
+            Subscription activated successfully.
           </div>
         )}
         {checkoutResult === "cancel" && (
           <div className="p-3 rounded-lg border border-warning/30 bg-warning/10 text-sm text-warning">
-            Checkout cancelado. Podés activarlo cuando quieras.
+            Checkout canceled. You can activate it anytime.
           </div>
         )}
 
         <div className="bg-card border border-card-border rounded-xl p-6 space-y-4">
-          <h2 className="font-semibold">Estado actual</h2>
+          <h2 className="font-semibold">Current status</h2>
 
           {billing.billingStatus === "trialing" && (
             <div className="space-y-2 text-sm">
               <p>
-                Trial activo. Te quedan <strong>{billing.trialDaysLeft}</strong>{" "}
-                días.
+                Trial active. You have <strong>{billing.trialDaysLeft}</strong>{" "}
+                days left.
               </p>
               <p>
-                Recuperado durante trial:{" "}
+                Recovered during trial:{" "}
                 <strong>{formatUsd(billing.recoveredDuringTrial)}</strong>
               </p>
               <p className="text-text-muted">
-                Solo cobramos si al final del trial recuperaste al menos{" "}
-                {formatUsd(BILLING_PLAN_AMOUNT_USD)}.
+                We only charge if you recovered at least{" "}
+                {formatUsd(BILLING_PLAN_AMOUNT_USD)} by the end of the trial.
               </p>
             </div>
           )}
@@ -86,10 +86,10 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           {billing.billingStatus === "active" && (
             <div className="space-y-2 text-sm">
               <p>
-                Plan activo: <strong>{formatUsd(BILLING_PLAN_AMOUNT_USD)}/mes</strong>
+                Active plan: <strong>{formatUsd(BILLING_PLAN_AMOUNT_USD)}/mo</strong>
               </p>
               <p>
-                Recuperado durante trial:{" "}
+                Recovered during trial:{" "}
                 <strong>{formatUsd(billing.recoveredDuringTrial)}</strong>
               </p>
               <BillingActions showActivatePlan={false} showManagePlan />
@@ -99,19 +99,19 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
           {billing.billingStatus === "canceled" && (
             <div className="space-y-2 text-sm">
               <p>
-                Cuenta cancelada por fin de trial. Recuperaste{" "}
-                <strong>{formatUsd(billing.recoveredDuringTrial)}</strong> en ese
-                período.
+                Account canceled after trial ended. You recovered{" "}
+                <strong>{formatUsd(billing.recoveredDuringTrial)}</strong> during
+                that period.
               </p>
               {billing.reachedMinimumCharge ? (
                 <p>
-                  Superaste el mínimo de {formatUsd(BILLING_PLAN_AMOUNT_USD)}. Para
-                  seguir usando la app, activá el plan.
+                  You exceeded the minimum of {formatUsd(BILLING_PLAN_AMOUNT_USD)}.
+                  Activate the plan to continue using the app.
                 </p>
               ) : (
                 <p>
-                  No llegaste al mínimo de {formatUsd(BILLING_PLAN_AMOUNT_USD)}.
-                  Este mes no corresponde cobro.
+                  You didn&apos;t reach the minimum of {formatUsd(BILLING_PLAN_AMOUNT_USD)}.
+                  No charge applies this month.
                 </p>
               )}
 
@@ -124,26 +124,26 @@ export default async function BillingPage({ searchParams }: BillingPageProps) {
 
           {billing.billingStatus === "not_started" && (
             <div className="space-y-2 text-sm">
-              <p>Aún no inició tu trial porque no conectaste Stripe.</p>
+              <p>Your trial hasn&apos;t started yet because Stripe is not connected.</p>
               <a
                 href="/onboarding"
                 className="inline-block px-4 py-2 bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors"
               >
-                Conectar Stripe
+                Connect Stripe
               </a>
             </div>
           )}
         </div>
 
         <div className="bg-card border border-card-border rounded-xl p-6">
-          <h2 className="font-semibold mb-3">Plan único</h2>
+          <h2 className="font-semibold mb-3">Plan</h2>
           <ul className="text-sm text-text-muted space-y-2">
-            <li>{BILLING_TRIAL_DAYS} días gratis.</li>
-            <li>Sin tarjeta durante el trial.</li>
-            <li>{formatUsd(BILLING_PLAN_AMOUNT_USD)}/mes al activar.</li>
+            <li>{BILLING_TRIAL_DAYS} days free.</li>
+            <li>No credit card required during trial.</li>
+            <li>{formatUsd(BILLING_PLAN_AMOUNT_USD)}/mo once activated.</li>
             <li>
-              Solo cobramos si recuperaste al menos{" "}
-              {formatUsd(BILLING_PLAN_AMOUNT_USD)} en el período de prueba.
+              We only charge if you recovered at least{" "}
+              {formatUsd(BILLING_PLAN_AMOUNT_USD)} during the trial period.
             </li>
           </ul>
         </div>

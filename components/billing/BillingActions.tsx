@@ -24,13 +24,13 @@ export function BillingActions({
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "No se pudo iniciar el checkout");
+        setError(data.error || "Could not start checkout");
         return;
       }
 
       window.location.href = data.url;
     } catch {
-      setError("Error de conexión al iniciar checkout");
+      setError("Connection error while starting checkout");
     } finally {
       setLoadingCheckout(false);
     }
@@ -45,13 +45,13 @@ export function BillingActions({
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "No se pudo abrir el portal");
+        setError(data.error || "Could not open portal");
         return;
       }
 
       window.location.href = data.url;
     } catch {
-      setError("Error de conexión al abrir portal");
+      setError("Connection error while opening portal");
     } finally {
       setLoadingPortal(false);
     }
@@ -71,7 +71,7 @@ export function BillingActions({
           disabled={loadingCheckout}
           className="px-4 py-2 bg-primary text-background font-medium rounded-lg hover:bg-primary-hover transition-colors disabled:opacity-60"
         >
-          {loadingCheckout ? "Abriendo checkout..." : "Activar plan $49/mes"}
+          {loadingCheckout ? "Opening checkout..." : "Activate plan $49/mo"}
         </button>
       )}
 
@@ -81,7 +81,7 @@ export function BillingActions({
           disabled={loadingPortal}
           className="px-4 py-2 border border-card-border rounded-lg text-foreground hover:bg-card disabled:opacity-60"
         >
-          {loadingPortal ? "Abriendo..." : "Gestionar suscripción"}
+          {loadingPortal ? "Opening..." : "Manage subscription"}
         </button>
       )}
     </div>

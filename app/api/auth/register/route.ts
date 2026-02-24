@@ -9,14 +9,14 @@ export async function POST(request: Request) {
 
     if (!email || !password) {
       return NextResponse.json(
-        { error: "Email y contraseña son requeridos" },
+        { error: "Email and password are required" },
         { status: 400 }
       );
     }
 
     if (password.length < 8) {
       return NextResponse.json(
-        { error: "La contraseña debe tener al menos 8 caracteres" },
+        { error: "Password must be at least 8 characters" },
         { status: 400 }
       );
     }

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!verifyRecoveryToken(caseId, token)) {
-      return NextResponse.json({ error: "Enlace inválido o expirado" }, { status: 403 });
+      return NextResponse.json({ error: "Invalid or expired link" }, { status: 403 });
     }
 
     await connectDB();

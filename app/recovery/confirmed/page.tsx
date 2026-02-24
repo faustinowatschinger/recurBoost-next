@@ -28,7 +28,7 @@ export default function RecoveryConfirmedPage() {
           color: "#1f2937",
           margin: "0 0 12px",
         }}>
-          Método de pago actualizado
+          Payment method updated
         </h1>
 
         <p style={{
@@ -37,8 +37,8 @@ export default function RecoveryConfirmedPage() {
           margin: "0 0 24px",
           lineHeight: 1.5,
         }}>
-          Tu método de pago fue actualizado correctamente.
-          Procesaremos tu pago en las próximas horas.
+          Your payment method has been updated successfully.
+          We&apos;ll process your payment within the next few hours.
         </p>
 
         <div style={{
@@ -49,7 +49,7 @@ export default function RecoveryConfirmedPage() {
           marginBottom: 24,
         }}>
           <p style={{ margin: 0, fontSize: 14, color: "#166534", lineHeight: 1.6 }}>
-            No se te va a cobrar de más. Tu suscripción sigue con el mismo plan y precio.
+            You won&apos;t be overcharged. Your subscription continues with the same plan and price.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export default function RecoveryConfirmedPage() {
           fontSize: 13,
           color: "#9ca3af",
         }}>
-          Ya podés cerrar esta ventana.
+          You can now close this window.
         </p>
       </div>
     </div>

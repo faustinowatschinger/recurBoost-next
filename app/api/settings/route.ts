@@ -7,7 +7,7 @@ import { requireBillingAccess } from "@/lib/billing/guards";
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -15,13 +15,13 @@ export async function GET() {
   } catch (err) {
     if (err instanceof Error && err.message === "BILLING_ACCESS_BLOCKED") {
       return NextResponse.json(
-        { error: "Cuenta cancelada. Activá un plan para continuar." },
+        { error: "Account canceled. Activate a plan to continue." },
         { status: 402 }
       );
     }
     console.error("Error validando billing (GET settings):", err);
     return NextResponse.json(
-      { error: "No se pudo validar el estado de billing" },
+      { error: "Could not validate billing status" },
       { status: 500 }
     );
   }
@@ -66,7 +66,7 @@ export async function GET() {
 export async function PUT(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -74,13 +74,13 @@ export async function PUT(request: Request) {
   } catch (err) {
     if (err instanceof Error && err.message === "BILLING_ACCESS_BLOCKED") {
       return NextResponse.json(
-        { error: "Cuenta cancelada. Activá un plan para continuar." },
+        { error: "Account canceled. Activate a plan to continue." },
         { status: 402 }
       );
     }
     console.error("Error validando billing (PUT settings):", err);
     return NextResponse.json(
-      { error: "No se pudo validar el estado de billing" },
+      { error: "Could not validate billing status" },
       { status: 500 }
     );
   }
@@ -118,7 +118,7 @@ export async function PUT(request: Request) {
   );
 
   if (!user) {
-    return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
   return NextResponse.json({

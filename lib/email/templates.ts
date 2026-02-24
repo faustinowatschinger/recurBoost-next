@@ -33,7 +33,7 @@ function wrapHtml(body: string, params: TemplateParams, options: WrapOptions = {
   const buttonColor = params.brandButtonColor || "#635bff";
   const buttonTextColor = params.brandButtonTextColor || "#ffffff";
   const brandColor = params.brandColor || "#635bff";
-  const ctaText = options.ctaText || "Actualizar método de pago";
+  const ctaText = options.ctaText || "Update payment method";
 
   const logoHtml = params.companyLogo
     ? `<img src="${params.companyLogo}" alt="${params.companyName}" style="max-height:40px;margin-bottom:16px;" />`
@@ -48,14 +48,14 @@ function wrapHtml(body: string, params: TemplateParams, options: WrapOptions = {
 
   const incentiveHtml = params.showIncentive && params.incentiveText
     ? `<div style="margin-top:16px;padding:14px;border:2px solid #f59e0b;border-radius:10px;background:#fffbeb;">
-        <p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#92400e;">💡 Oferta especial</p>
+        <p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#92400e;">💡 Special offer</p>
         <p style="margin:0;font-size:13px;color:#78350f;">${params.incentiveText}</p>
       </div>`
     : "";
 
   const exitOptionHtml = options.showExitOption
     ? `<p style="margin-top:16px;font-size:12px;color:#9ca3af;text-align:center;">
-        Si ya no necesitás el servicio, podés ignorar este email.
+        If you no longer need the service, you can ignore this email.
       </p>`
     : "";
 
@@ -82,24 +82,24 @@ function wrapHtml(body: string, params: TemplateParams, options: WrapOptions = {
         ${ctaText}
       </a>
       <p style="margin-top:8px;font-size:12px;color:#9ca3af;">
-        Este enlace es seguro y funciona solo para tu cuenta.
+        This link is secure and works only for your account.
       </p>
       <div style="margin-top:6px;font-size:11px;color:#d1d5db;">
-        Si el botón no funciona, copiá y pegá este link: <br/>
+        If the button doesn't work, copy and paste this link: <br/>
         <span style="word-break:break-all;color:#9ca3af;">${params.portalUrl}</span>
       </div>
     </div>
 
     <div style="margin-top:18px;padding:14px;border:1px solid #eef0f6;border-radius:10px;background:#fafbff;">
       <div style="font-size:13px;color:#374151;">
-        ¿Te trabaste o preferís que lo resolvamos juntos? Respondé a este email y te ayudamos.
+        Need help? Reply to this email and we'll assist you.
       </div>
     </div>
 
     ${exitOptionHtml}
 
     <p style="margin-top:22px;font-size:12px;color:#9ca3af;">
-      Este email fue enviado por ${params.companyName}. Si ya actualizaste tu método de pago, podés ignorarlo.
+      This email was sent by ${params.companyName}. If you've already updated your payment method, you can ignore it.
     </p>
   </div>
   ${openPixelHtml}
@@ -110,10 +110,10 @@ function wrapHtml(body: string, params: TemplateParams, options: WrapOptions = {
 // ─── Helper: anxiety reduction block ───
 function anxietyBlock(): string {
   return `<ul style="margin:0 0 12px;padding-left:18px;font-size:14px;line-height:1.8;color:#374151;">
-      <li>Se hace en menos de 1 minuto</li>
-      <li>No cambia tu plan</li>
-      <li>No perdés configuración ni datos</li>
-      <li>No hay cargos adicionales</li>
+      <li>Takes less than 1 minute</li>
+      <li>Your plan stays the same</li>
+      <li>You won't lose any settings or data</li>
+      <li>No additional charges</li>
     </ul>`;
 }
 
@@ -123,63 +123,63 @@ function anxietyBlock(): string {
 
 const EXPIRED_CARD_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => string> = {
   0: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      No pudimos procesar tu pago de <strong>${formatCurrency(p.amount, p.currency)}</strong> porque tu tarjeta <strong>expiró</strong>.
+      We couldn't process your payment of <strong>${formatCurrency(p.amount, p.currency)}</strong> because your card has <strong>expired</strong>.
     </p>
     <p style="margin:0 0 12px;">
-      Tu suscripción sigue activa. Solo necesitás actualizar tu método de pago para que todo siga funcionando.
+      Your subscription is still active. You just need to update your payment method to keep everything running.
     </p>
     ${anxietyBlock()}
-  `, p, { ctaText: "Resolver ahora" }),
+  `, p, { ctaText: "Fix this now" }),
 
   1: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Recordatorio rápido: seguimos sin poder cobrar <strong>${formatCurrency(p.amount, p.currency)}</strong> porque tu tarjeta está expirada.
+      Quick reminder: we still can't charge <strong>${formatCurrency(p.amount, p.currency)}</strong> because your card is expired.
     </p>
     <p style="margin:0 0 12px;">
-      Un solo paso y queda resuelto. Es el mismo proceso seguro de siempre.
+      One step and you're all set. It's the same secure process as always.
     </p>
     ${anxietyBlock()}
-  `, p, { ctaText: "Confirmar método de pago" }),
+  `, p, { ctaText: "Confirm payment method" }),
 
   2: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Ya pasaron 3 días y todavía no pudimos cobrar <strong>${formatCurrency(p.amount, p.currency)}</strong>.
-      Tu tarjeta sigue figurando como expirada.
+      It's been 3 days and we still haven't been able to charge <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      Your card is still showing as expired.
     </p>
     <p style="margin:0 0 12px;">
-      Actualizá el método de pago para evitar interrupciones en tu servicio.
+      Update your payment method to avoid any interruptions to your service.
     </p>
     <ul style="margin:0 0 12px;padding-left:18px;">
-      <li>Un solo paso</li>
-      <li>Sin llamadas ni formularios raros</li>
-      <li>Tu suscripción sigue igual</li>
+      <li>Just one step</li>
+      <li>No phone calls or complicated forms</li>
+      <li>Your subscription stays exactly the same</li>
     </ul>
-  `, p, { ctaText: "Mantener mi suscripción activa" }),
+  `, p, { ctaText: "Keep my subscription active" }),
 
   3: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Tu pago de <strong>${formatCurrency(p.amount, p.currency)}</strong> sigue pendiente por tarjeta expirada.
-      <strong>Tu acceso se puede pausar pronto</strong> si no se resuelve.
+      Your payment of <strong>${formatCurrency(p.amount, p.currency)}</strong> is still pending due to an expired card.
+      <strong>Your access may be suspended soon</strong> if this isn't resolved.
     </p>
     <p style="margin:0 0 12px;">
-      Todavía estás a tiempo. Actualizá tu tarjeta y sigue todo igual.
+      You still have time. Update your card and everything continues as normal.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa", showExitOption: true }),
+  `, p, { ctaText: "Keep my subscription active", showExitOption: true }),
 
   4: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      <strong>Último aviso:</strong> mañana pausamos tu suscripción si no se completa el pago de <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      <strong>Final notice:</strong> we're suspending your subscription tomorrow if the payment of <strong>${formatCurrency(p.amount, p.currency)}</strong> isn't completed.
     </p>
     <p style="margin:0 0 12px;">
-      No perdés tu configuración ni datos. Cuando actualices la tarjeta, todo vuelve a funcionar.
+      You won't lose your settings or data. Once you update your card, everything comes back online.
     </p>
-  `, p, { ctaText: "Completar pago antes de la pausa", showExitOption: true }),
+  `, p, { ctaText: "Complete payment before suspension", showExitOption: true }),
 };
 
 // ════════════════════════════════════════════════════
@@ -188,64 +188,64 @@ const EXPIRED_CARD_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => string
 
 const INSUFFICIENT_FUNDS_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => string> = {
   0: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Intentamos cobrar <strong>${formatCurrency(p.amount, p.currency)}</strong>, pero tu banco indicó <strong>fondos insuficientes</strong>.
-      Sabemos que esto suele ser algo temporal.
+      We tried to charge <strong>${formatCurrency(p.amount, p.currency)}</strong>, but your bank reported <strong>insufficient funds</strong>.
+      We know this is usually temporary.
     </p>
-    <p style="margin:0 0 12px;">Tenés dos opciones rápidas:</p>
+    <p style="margin:0 0 12px;">You have two quick options:</p>
     <ul style="margin:0 0 12px;padding-left:18px;">
-      <li>Usar otra tarjeta (se resuelve al instante)</li>
-      <li>Esperar: vamos a reintentar automáticamente</li>
+      <li>Use a different card (resolves instantly)</li>
+      <li>Wait — we'll retry automatically</li>
     </ul>
-  `, p, { ctaText: "Resolver ahora" }),
+  `, p, { ctaText: "Fix this now" }),
 
   1: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Seguimos sin poder completar el cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      We still haven't been able to complete the charge of <strong>${formatCurrency(p.amount, p.currency)}</strong>.
     </p>
     <p style="margin:0 0 12px;">
-      Si tu saldo ya está ok, una actualización rápida del método de pago suele destrabarlo.
+      If your balance is ready, a quick payment method update usually gets things moving right away.
     </p>
     ${anxietyBlock()}
-  `, p, { ctaText: "Confirmar método de pago" }),
+  `, p, { ctaText: "Confirm payment method" }),
 
   2: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Ya pasaron 3 días y el cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong> sigue fallando por fondos insuficientes.
+      It's been 3 days and the charge of <strong>${formatCurrency(p.amount, p.currency)}</strong> keeps failing due to insufficient funds.
     </p>
     <p style="margin:0 0 12px;">
-      La opción más rápida es cambiar a otra tarjeta o método de pago.
+      The fastest option is to switch to a different card or payment method.
     </p>
     <ul style="margin:0 0 12px;padding-left:18px;">
-      <li>Se cambia en 1 minuto</li>
-      <li>No cambia tu plan</li>
-      <li>Evita interrupciones</li>
+      <li>Takes 1 minute to switch</li>
+      <li>Your plan stays the same</li>
+      <li>Avoids any interruptions</li>
     </ul>
-  `, p, { ctaText: "Mantener mi suscripción activa" }),
+  `, p, { ctaText: "Keep my subscription active" }),
 
   3: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Tu suscripción está en riesgo. El cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong> sigue sin poder procesarse.
+      Your subscription is at risk. The charge of <strong>${formatCurrency(p.amount, p.currency)}</strong> still can't be processed.
     </p>
     <p style="margin:0 0 12px;">
-      <strong>Actualizá tu método de pago hoy</strong> para evitar la pausa del servicio.
+      <strong>Update your payment method today</strong> to avoid the service being suspended.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa", showExitOption: true }),
+  `, p, { ctaText: "Keep my subscription active", showExitOption: true }),
 
   4: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      <strong>Último aviso:</strong> si no se completa el pago de <strong>${formatCurrency(p.amount, p.currency)}</strong>,
-      pausamos tu suscripción mañana.
+      <strong>Final notice:</strong> if the payment of <strong>${formatCurrency(p.amount, p.currency)}</strong> isn't completed,
+      we're suspending your subscription tomorrow.
     </p>
     <p style="margin:0 0 12px;">
-      No perdés tu configuración. Cuando actualices el método de pago, todo vuelve.
+      You won't lose your settings. Once you update your payment method, everything comes back.
     </p>
-  `, p, { ctaText: "Completar pago antes de la pausa", showExitOption: true }),
+  `, p, { ctaText: "Complete payment before suspension", showExitOption: true }),
 };
 
 // ════════════════════════════════════════════════════
@@ -254,59 +254,59 @@ const INSUFFICIENT_FUNDS_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => 
 
 const DO_NOT_HONOR_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => string> = {
   0: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Tu banco <strong>rechazó el cobro</strong> de <strong>${formatCurrency(p.amount, p.currency)}</strong> sin un motivo específico.
-      Esto pasa a veces por controles de seguridad del banco.
+      Your bank <strong>declined the charge</strong> of <strong>${formatCurrency(p.amount, p.currency)}</strong> without a specific reason.
+      This sometimes happens due to the bank's security controls.
     </p>
-    <p style="margin:0 0 12px;">Podés resolverlo rápido de dos formas:</p>
+    <p style="margin:0 0 12px;">You can resolve it quickly in two ways:</p>
     <ul style="margin:0 0 12px;padding-left:18px;">
-      <li>Probá con otra tarjeta (la opción más rápida)</li>
-      <li>Contactá a tu banco para desbloquear el cobro</li>
+      <li>Try a different card (the fastest option)</li>
+      <li>Contact your bank to unblock the charge</li>
     </ul>
-  `, p, { ctaText: "Resolver ahora" }),
+  `, p, { ctaText: "Fix this now" }),
 
   1: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      ¿Pudiste resolver el rechazo del banco? El cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong> sigue pendiente.
+      Were you able to resolve the bank decline? The charge of <strong>${formatCurrency(p.amount, p.currency)}</strong> is still pending.
     </p>
     <p style="margin:0 0 12px;">
-      A veces alcanza con llamar al banco o usar otra tarjeta.
+      Sometimes calling your bank or using a different card is all it takes.
     </p>
     ${anxietyBlock()}
-  `, p, { ctaText: "Confirmar método de pago" }),
+  `, p, { ctaText: "Confirm payment method" }),
 
   2: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Ya pasaron 3 días y tu banco sigue rechazando el cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      It's been 3 days and your bank is still declining the charge of <strong>${formatCurrency(p.amount, p.currency)}</strong>.
     </p>
     <p style="margin:0 0 12px;">
-      Usar otra tarjeta es la forma más rápida de destrabar esto.
+      Using a different card is the fastest way to get this unblocked.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa" }),
+  `, p, { ctaText: "Keep my subscription active" }),
 
   3: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Tu acceso puede pausarse pronto. El cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong> fue rechazado por el banco múltiples veces.
+      Your access may be suspended soon. The charge of <strong>${formatCurrency(p.amount, p.currency)}</strong> has been declined by your bank multiple times.
     </p>
     <p style="margin:0 0 12px;">
-      <strong>Actualizá tu tarjeta hoy</strong> y sigue todo igual.
+      <strong>Update your card today</strong> and everything continues as normal.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa", showExitOption: true }),
+  `, p, { ctaText: "Keep my subscription active", showExitOption: true }),
 
   4: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      <strong>Último aviso:</strong> el banco sigue rechazando el cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong>.
-      Mañana pausamos tu suscripción.
+      <strong>Final notice:</strong> your bank keeps declining the charge of <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      We're suspending your subscription tomorrow.
     </p>
     <p style="margin:0 0 12px;">
-      Cambiá de tarjeta ahora y evitá la interrupción. Tu configuración y datos quedan intactos.
+      Switch cards now to avoid the interruption. Your settings and data will remain intact.
     </p>
-  `, p, { ctaText: "Completar pago antes de la pausa", showExitOption: true }),
+  `, p, { ctaText: "Complete payment before suspension", showExitOption: true }),
 };
 
 // ════════════════════════════════════════════════════
@@ -315,60 +315,60 @@ const DO_NOT_HONOR_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => string
 
 const AUTHENTICATION_REQUIRED_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => string> = {
   0: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Tu banco necesita una <strong>confirmación adicional</strong> (3D Secure) para procesar el cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      Your bank requires an <strong>additional confirmation</strong> (3D Secure) to process the charge of <strong>${formatCurrency(p.amount, p.currency)}</strong>.
     </p>
     <p style="margin:0 0 12px;">
-      Esto es un paso de seguridad normal. Podés resolverlo de dos formas:
+      This is a normal security step. You can resolve it in two ways:
     </p>
     <ul style="margin:0 0 12px;padding-left:18px;">
-      <li>Autorizá el cobro desde la app de tu banco</li>
-      <li>O usá otra tarjeta que no requiera verificación</li>
+      <li>Authorize the charge through your bank's app</li>
+      <li>Or use a different card that doesn't require verification</li>
     </ul>
-  `, p, { ctaText: "Resolver ahora" }),
+  `, p, { ctaText: "Fix this now" }),
 
   1: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Falta confirmar tu pago de <strong>${formatCurrency(p.amount, p.currency)}</strong>. Tu banco requiere verificación 3D Secure.
+      Your payment of <strong>${formatCurrency(p.amount, p.currency)}</strong> still needs confirmation. Your bank requires 3D Secure verification.
     </p>
     <p style="margin:0 0 12px;">
-      Si preferís evitar este paso, podés usar otra tarjeta.
+      If you'd rather skip this step, you can use a different card.
     </p>
     ${anxietyBlock()}
-  `, p, { ctaText: "Confirmar método de pago" }),
+  `, p, { ctaText: "Confirm payment method" }),
 
   2: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Ya pasaron 3 días esperando la confirmación de tu pago de <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      It's been 3 days waiting for your payment confirmation of <strong>${formatCurrency(p.amount, p.currency)}</strong>.
     </p>
     <p style="margin:0 0 12px;">
-      Podés autorizarlo desde tu app bancaria o cambiar a otra tarjeta.
+      You can authorize it through your banking app or switch to a different card.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa" }),
+  `, p, { ctaText: "Keep my subscription active" }),
 
   3: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Tu suscripción se pausa pronto si no confirmás el pago de <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      Your subscription will be suspended soon if you don't confirm the payment of <strong>${formatCurrency(p.amount, p.currency)}</strong>.
     </p>
     <p style="margin:0 0 12px;">
-      <strong>Confirmá la autenticación o cambiá de tarjeta</strong> para mantener tu acceso.
+      <strong>Complete the authentication or switch cards</strong> to keep your access.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa", showExitOption: true }),
+  `, p, { ctaText: "Keep my subscription active", showExitOption: true }),
 
   4: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      <strong>Último aviso:</strong> completá la verificación del pago de <strong>${formatCurrency(p.amount, p.currency)}</strong>
-      o actualizá tu tarjeta. Mañana pausamos el servicio.
+      <strong>Final notice:</strong> complete the payment verification of <strong>${formatCurrency(p.amount, p.currency)}</strong>
+      or update your card. We're suspending the service tomorrow.
     </p>
     <p style="margin:0 0 12px;">
-      Tu configuración y datos quedan guardados. Cuando lo resuelvas, todo vuelve a funcionar.
+      Your settings and data are saved. Once you resolve this, everything comes back online.
     </p>
-  `, p, { ctaText: "Completar pago antes de la pausa", showExitOption: true }),
+  `, p, { ctaText: "Complete payment before suspension", showExitOption: true }),
 };
 
 // ════════════════════════════════════════════════════
@@ -377,58 +377,58 @@ const AUTHENTICATION_REQUIRED_TEMPLATES: Record<SequenceStep, (p: TemplateParams
 
 const INCORRECT_DATA_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => string> = {
   0: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      No pudimos procesar tu pago de <strong>${formatCurrency(p.amount, p.currency)}</strong> porque los datos de tu tarjeta tienen un <strong>error</strong>
-      (número, CVC o fecha de vencimiento).
+      We couldn't process your payment of <strong>${formatCurrency(p.amount, p.currency)}</strong> because your card details have an <strong>error</strong>
+      (card number, CVC, or expiration date).
     </p>
     <p style="margin:0 0 12px;">
-      Actualizá los datos correctos y se procesa al instante.
+      Update the correct details and it processes instantly.
     </p>
     ${anxietyBlock()}
-  `, p, { ctaText: "Corregir datos de tarjeta" }),
+  `, p, { ctaText: "Fix card details" }),
 
   1: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Seguimos viendo datos incorrectos en tu tarjeta. El cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong> no se puede procesar.
+      We're still seeing incorrect details on your card. The charge of <strong>${formatCurrency(p.amount, p.currency)}</strong> can't be processed.
     </p>
     <p style="margin:0 0 12px;">
-      Verificá el número, CVC y fecha de vencimiento, o probá con otra tarjeta.
+      Double-check the card number, CVC, and expiration date, or try a different card.
     </p>
-  `, p, { ctaText: "Actualizar datos de tarjeta" }),
+  `, p, { ctaText: "Update card details" }),
 
   2: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Ya pasaron 3 días y el cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong> sigue fallando por datos incorrectos.
+      It's been 3 days and the charge of <strong>${formatCurrency(p.amount, p.currency)}</strong> keeps failing due to incorrect card details.
     </p>
     <p style="margin:0 0 12px;">
-      Actualizá los datos o usá otra tarjeta para mantener tu servicio activo.
+      Update your details or use a different card to keep your service active.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa" }),
+  `, p, { ctaText: "Keep my subscription active" }),
 
   3: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Tu suscripción se pausa pronto si no corregís los datos de tu tarjeta.
-      El cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong> sigue pendiente.
+      Your subscription is pausing soon if you don't fix your card details.
+      The charge of <strong>${formatCurrency(p.amount, p.currency)}</strong> is still pending.
     </p>
     <p style="margin:0 0 12px;">
-      <strong>Actualizá tu tarjeta hoy</strong> y sigue todo igual.
+      <strong>Update your card today</strong> and everything continues as normal.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa", showExitOption: true }),
+  `, p, { ctaText: "Keep my subscription active", showExitOption: true }),
 
   4: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      <strong>Último aviso:</strong> corregí los datos de tu tarjeta o usá otra para completar el pago de <strong>${formatCurrency(p.amount, p.currency)}</strong>.
-      Mañana pausamos el servicio.
+      <strong>Final notice:</strong> fix your card details or use a different card to complete the payment of <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      We're suspending the service tomorrow.
     </p>
     <p style="margin:0 0 12px;">
-      Tu configuración y datos quedan guardados.
+      Your settings and data are saved.
     </p>
-  `, p, { ctaText: "Completar pago antes de la pausa", showExitOption: true }),
+  `, p, { ctaText: "Complete payment before suspension", showExitOption: true }),
 };
 
 // ════════════════════════════════════════════════════
@@ -437,64 +437,64 @@ const INCORRECT_DATA_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => stri
 
 const GENERIC_TEMPLATES: Record<SequenceStep, (p: TemplateParams) => string> = {
   0: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Tu pago de <strong>${formatCurrency(p.amount, p.currency)}</strong> no pudo completarse.
-      A veces el banco rechaza el intento por seguridad o por datos desactualizados.
+      Your payment of <strong>${formatCurrency(p.amount, p.currency)}</strong> couldn't be completed.
+      Sometimes banks decline a charge for security reasons or due to outdated details.
     </p>
-    <p style="margin:0 0 12px;">La forma más rápida de resolverlo es:</p>
+    <p style="margin:0 0 12px;">The fastest way to fix it:</p>
     <ul style="margin:0 0 12px;padding-left:18px;">
-      <li>Confirmar/actualizar el método de pago</li>
-      <li>O usar otra tarjeta</li>
+      <li>Confirm or update your payment method</li>
+      <li>Or use a different card</li>
     </ul>
     ${anxietyBlock()}
-  `, p, { ctaText: "Resolver ahora" }),
+  `, p, { ctaText: "Fix this now" }),
 
   1: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Seguimos viendo el pago pendiente de <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      We're still seeing the pending payment of <strong>${formatCurrency(p.amount, p.currency)}</strong>.
     </p>
     <p style="margin:0 0 12px;">
-      Un click y queda resuelto. No cambia tu plan ni tus datos.
+      One click and you're done. Your plan and data stay exactly the same.
     </p>
     <ul style="margin:0 0 12px;padding-left:18px;">
-      <li>Un solo paso</li>
-      <li>Sin cambiar tu plan</li>
-      <li>Evita interrupciones</li>
+      <li>Just one step</li>
+      <li>Your plan doesn't change</li>
+      <li>No interruptions</li>
     </ul>
-  `, p, { ctaText: "Confirmar método de pago" }),
+  `, p, { ctaText: "Confirm payment method" }),
 
   2: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Ya pasaron 3 días sin poder cobrar <strong>${formatCurrency(p.amount, p.currency)}</strong>.
+      It's been 3 days without a successful charge of <strong>${formatCurrency(p.amount, p.currency)}</strong>.
     </p>
     <p style="margin:0 0 12px;">
-      Si te queda más cómodo, podés actualizar el método de pago y se procesa al instante.
+      Whenever you're ready, updating your payment method will process it instantly.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa" }),
+  `, p, { ctaText: "Keep my subscription active" }),
 
   3: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      Tu acceso puede pausarse pronto. El cobro de <strong>${formatCurrency(p.amount, p.currency)}</strong> sigue sin completarse.
+      Your access may be suspended soon. The charge of <strong>${formatCurrency(p.amount, p.currency)}</strong> still hasn't gone through.
     </p>
     <p style="margin:0 0 12px;">
-      <strong>Actualizá tu método de pago hoy</strong> para mantener tu servicio activo.
+      <strong>Update your payment method today</strong> to keep your service active.
     </p>
-  `, p, { ctaText: "Mantener mi suscripción activa", showExitOption: true }),
+  `, p, { ctaText: "Keep my subscription active", showExitOption: true }),
 
   4: (p) => wrapHtml(`
-    <p style="margin:0 0 12px;">Hola,</p>
+    <p style="margin:0 0 12px;">Hi,</p>
     <p style="margin:0 0 12px;">
-      <strong>Último aviso:</strong> si no se completa el pago de <strong>${formatCurrency(p.amount, p.currency)}</strong>,
-      pausamos tu suscripción mañana.
+      <strong>Final notice:</strong> if the payment of <strong>${formatCurrency(p.amount, p.currency)}</strong> isn't completed,
+      we're suspending your subscription tomorrow.
     </p>
     <p style="margin:0 0 12px;">
-      No perdés tu configuración ni datos. Cuando actualices el método de pago, todo vuelve a funcionar.
+      You won't lose your settings or data. Once you update your payment method, everything comes back online.
     </p>
-  `, p, { ctaText: "Completar pago antes de la pausa", showExitOption: true }),
+  `, p, { ctaText: "Complete payment before suspension", showExitOption: true }),
 };
 
 // ════════════════════════════════════════════════════

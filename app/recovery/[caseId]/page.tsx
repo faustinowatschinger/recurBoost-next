@@ -24,7 +24,7 @@ export default function RecoveryLandingPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        setError(data.error || "No pudimos generar el enlace. Intentá de nuevo.");
+        setError(data.error || "We couldn't generate the link. Please try again.");
         setLoading(false);
         return;
       }
@@ -32,7 +32,7 @@ export default function RecoveryLandingPage() {
       const data = await res.json();
       window.location.href = data.url;
     } catch {
-      setError("Error de conexión. Intentá de nuevo en unos segundos.");
+      setError("Connection error. Please try again in a few seconds.");
       setLoading(false);
     }
   }
@@ -64,7 +64,7 @@ export default function RecoveryLandingPage() {
           color: "#1f2937",
           margin: "0 0 8px",
         }}>
-          Actualizá tu método de pago
+          Update your payment method
         </h1>
 
         <p style={{
@@ -73,7 +73,7 @@ export default function RecoveryLandingPage() {
           margin: "0 0 24px",
           lineHeight: 1.5,
         }}>
-          Tu pago no se pudo procesar. Actualizá tu tarjeta para mantener tu suscripción activa.
+          Your payment couldn&apos;t be processed. Update your card to keep your subscription active.
         </p>
 
         <div style={{
@@ -85,13 +85,13 @@ export default function RecoveryLandingPage() {
           textAlign: "left",
         }}>
           <p style={{ margin: "0 0 8px", fontSize: 14, fontWeight: 600, color: "#166534" }}>
-            Esto es rápido y seguro:
+            This is quick and secure:
           </p>
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: "#15803d", lineHeight: 1.8 }}>
-            <li>No cambia tu plan actual</li>
-            <li>No perdés tu configuración ni datos</li>
-            <li>No se te cobra de más</li>
-            <li>Se hace en menos de 1 minuto</li>
+            <li>Your current plan stays the same</li>
+            <li>You won&apos;t lose any settings or data</li>
+            <li>You won&apos;t be overcharged</li>
+            <li>It takes less than 1 minute</li>
           </ul>
         </div>
 
@@ -112,7 +112,7 @@ export default function RecoveryLandingPage() {
             transition: "background 0.2s",
           }}
         >
-          {loading ? "Generando enlace seguro..." : "Actualizar método de pago"}
+          {loading ? "Generating secure link..." : "Update payment method"}
         </button>
 
         <p style={{
@@ -120,9 +120,9 @@ export default function RecoveryLandingPage() {
           fontSize: 12,
           color: "#9ca3af",
         }}>
-          Este enlace es seguro y funciona solo para tu cuenta.
+          This link is secure and works only for your account.
           <br />
-          Serás redirigido al portal de pago de Stripe.
+          You&apos;ll be redirected to the Stripe payment portal.
         </p>
 
         {error && (
@@ -144,7 +144,7 @@ export default function RecoveryLandingPage() {
           fontSize: 12,
           color: "#d1d5db",
         }}>
-          Si ya no necesitás el servicio, podés ignorar este mensaje.
+          If you no longer need the service, you can ignore this message.
         </p>
       </div>
     </div>

@@ -10,7 +10,7 @@ const MAX_SIZE = 512 * 1024; // 512KB — logos should be small
 export async function POST(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
@@ -18,12 +18,12 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     if (err instanceof Error && err.message === "BILLING_ACCESS_BLOCKED") {
       return NextResponse.json(
-        { error: "Cuenta cancelada. Activá un plan para continuar." },
+        { error: "Account canceled. Activate a plan to continue." },
         { status: 402 }
       );
     }
     return NextResponse.json(
-      { error: "No se pudo validar el estado de billing" },
+      { error: "Could not validate billing status" },
       { status: 500 }
     );
   }
@@ -32,19 +32,19 @@ export async function POST(request: NextRequest) {
   const file = formData.get("logo") as File | null;
 
   if (!file) {
-    return NextResponse.json({ error: "No se recibió ningún archivo" }, { status: 400 });
+    return NextResponse.json({ error: "No file received" }, { status: 400 });
   }
 
   if (!ALLOWED_TYPES.includes(file.type)) {
     return NextResponse.json(
-      { error: "Formato no soportado. Usá PNG, JPG, WebP o SVG." },
+      { error: "Unsupported format. Use PNG, JPG, WebP or SVG." },
       { status: 400 }
     );
   }
 
   if (file.size > MAX_SIZE) {
     return NextResponse.json(
-      { error: "El archivo es muy grande. Máximo 512KB." },
+      { error: "File is too large. Max 512KB." },
       { status: 400 }
     );
   }

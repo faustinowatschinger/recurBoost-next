@@ -7,14 +7,14 @@ import { encrypt } from "@/lib/security/crypto";
 export async function POST(request: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "No autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { webhookSecret } = await request.json();
 
   if (!webhookSecret || typeof webhookSecret !== "string" || !webhookSecret.startsWith("whsec_")) {
     return NextResponse.json(
-      { error: "Se requiere un webhook secret válido (whsec_...)" },
+      { error: "A valid webhook secret is required (whsec_...)" },
       { status: 400 }
     );
   }
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
 
   if (!integration) {
     return NextResponse.json(
-      { error: "No hay integración activa" },
+      { error: "No active integration" },
       { status: 404 }
     );
   }

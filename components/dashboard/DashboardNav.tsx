@@ -40,7 +40,7 @@ export function DashboardNav({ userName }: DashboardNavProps) {
             onClick={() => signOut({ callbackUrl: "/login" })}
             className="text-sm text-text-muted hover:text-foreground transition-colors"
           >
-            Cerrar sesión
+            Sign out
           </button>
         </div>
       </div>
