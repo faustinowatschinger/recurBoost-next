@@ -4,11 +4,13 @@ import { PaymentIntegration } from "@/lib/db/models";
 import { decrypt } from "@/lib/security/crypto";
 
 const DAYS_TO_IMPORT = 90;
+const MAX_INVOICES_PER_STATUS = 10_000; // Safety limit to prevent runaway iteration
 
 interface BaselineResult {
   totalFailed: number;
   totalRecovered: number;
   recoveryRate: number;
+  truncated?: boolean;
 }
 
 /**
@@ -36,42 +38,61 @@ export async function calculateBaseline(userId: string): Promise<BaselineResult>
 
   let totalFailed = 0;
   let totalRecovered = 0;
+  let totalProcessed = 0;
+  let truncated = false;
 
-  // Fetch all invoices from the last 90 days
-  const invoiceParams: Stripe.InvoiceListParams = {
+  // Helper to enforce safety limit across all status queries
+  const canContinue = () => {
+    if (totalProcessed >= MAX_INVOICES_PER_STATUS * 3) {
+      truncated = true;
+      return false;
+    }
+    return true;
+  };
+
+  // Count paid invoices that had at least one failed attempt (then recovered)
+  const paidParams: Stripe.InvoiceListParams = {
     created: { gte: sinceTimestamp },
     limit: 100,
     status: "paid",
   };
 
-  // Count paid invoices that had at least one failed attempt
-  for await (const invoice of stripe.invoices.list(invoiceParams)) {
+  for await (const invoice of stripe.invoices.list(paidParams)) {
+    totalProcessed++;
+    if (!canContinue()) break;
     if (invoice.attempted && invoice.attempt_count > 1) {
       totalFailed++;
       totalRecovered++;
     }
   }
 
-  // Also count currently open invoices that failed
-  const failedParams: Stripe.InvoiceListParams = {
+  // Count currently open invoices with failed attempts
+  const openParams: Stripe.InvoiceListParams = {
     created: { gte: sinceTimestamp },
     limit: 100,
     status: "open",
   };
 
-  for await (const invoice of stripe.invoices.list(failedParams)) {
+  for await (const invoice of stripe.invoices.list(openParams)) {
+    totalProcessed++;
+    if (!canContinue()) break;
     if (invoice.attempted && invoice.attempt_count > 0) {
       totalFailed++;
     }
   }
 
-  // Also check uncollectible invoices
-  const uncollectibleList = await stripe.invoices.list({
+  // Count uncollectible invoices (permanent failures)
+  const uncollectibleParams: Stripe.InvoiceListParams = {
     created: { gte: sinceTimestamp },
     limit: 100,
     status: "uncollectible",
-  });
-  totalFailed += uncollectibleList.data.length;
+  };
+
+  for await (const _invoice of stripe.invoices.list(uncollectibleParams)) {
+    totalProcessed++;
+    if (!canContinue()) break;
+    totalFailed++;
+  }
 
   const recoveryRate = totalFailed > 0
     ? (totalRecovered / totalFailed) * 100
@@ -86,5 +107,6 @@ export async function calculateBaseline(userId: string): Promise<BaselineResult>
     totalFailed,
     totalRecovered,
     recoveryRate: integration.baselineRecoveryRate,
+    truncated,
   };
 }

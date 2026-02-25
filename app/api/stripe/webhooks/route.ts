@@ -7,8 +7,9 @@ import {
   ProcessedEvent,
 } from "@/lib/db/models";
 import { decrypt } from "@/lib/security/crypto";
-import { classifyFailure, isHardDecline, isRetryableFailure } from "@/lib/stripe/classify";
+import { classifyFailure, isHardDecline, isRetryableFailure, formatStripeAmount } from "@/lib/stripe/classify";
 import { triggerRecoverySequence } from "@/lib/recovery/engine";
+import { getBillingAccessState } from "@/lib/billing/service";
 import { getPostHogClient } from "@/lib/posthog-server";
 import { canUseTestOverrideEmail } from "@/lib/security/runtime";
 
@@ -111,6 +112,24 @@ async function handlePaymentFailed(
   });
   if (existing) return;
 
+  // Validate the invoice belongs to this integration's Stripe account
+  // (prevents cross-account webhook spoofing in multi-tenant setups)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const invoiceAccount = (invoice as any).account;
+  if (
+    invoiceAccount &&
+    integration.stripeAccountId &&
+    !integration.stripeAccountId.startsWith("acct_live_rk_") &&
+    !integration.stripeAccountId.startsWith("acct_test_rk_") &&
+    invoiceAccount !== integration.stripeAccountId
+  ) {
+    console.warn(
+      `Webhook: invoice ${invoice.id} account (${invoiceAccount}) ` +
+      `doesn't match integration account (${integration.stripeAccountId}). Skipping.`
+    );
+    return;
+  }
+
   // Extract decline code — retrieve PaymentIntent if needed
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const invoiceData = invoice as any;
@@ -136,6 +155,17 @@ async function handlePaymentFailed(
     declineCode = invoiceData.last_finalization_error?.code || null;
   }
 
+  // Verify user still has billing access (trial or paid plan)
+  const billing = await getBillingAccessState(integration.userId, {
+    autoExpireTrial: true,
+  });
+  if (!billing.canAccessProduct) {
+    console.warn(
+      `Webhook: user ${integration.userId} billing access blocked. Skipping case for invoice ${invoice.id}.`
+    );
+    return;
+  }
+
   const failureType = classifyFailure(declineCode);
   const hardDecline = isHardDecline(failureType);
   const status = hardDecline ? "failed" : "active";
@@ -154,6 +184,16 @@ async function handlePaymentFailed(
     ? process.env.TEST_OVERRIDE_EMAIL
     : undefined;
 
+  const customerEmail = testOverrideEmail || invoice.customer_email;
+
+  if (!customerEmail) {
+    console.warn(
+      `Webhook: invoice ${invoice.id} has no customer email. ` +
+      `Customer ${customerId} — skipping recovery case creation.`
+    );
+    return;
+  }
+
   const recoveryCase = await RecoveryCase.create({
     userId: integration.userId,
     stripeAccountId: integration.stripeAccountId,
@@ -163,9 +203,8 @@ async function handlePaymentFailed(
       (typeof invoiceData.subscription === "string"
         ? invoiceData.subscription
         : invoiceData.subscription?.id) || undefined,
-    customerEmail:
-      testOverrideEmail || invoice.customer_email || "unknown@test.local",
-    amount: invoice.amount_due / 100,
+    customerEmail,
+    amount: formatStripeAmount(invoice.amount_due, invoice.currency),
     currency: invoice.currency,
     failureType,
     declineCode: declineCode || undefined,
@@ -210,7 +249,7 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   if (!recoveryCase) return;
 
   recoveryCase.recovered = true;
-  recoveryCase.recoveredAmount = invoice.amount_paid / 100;
+  recoveryCase.recoveredAmount = formatStripeAmount(invoice.amount_paid, invoice.currency);
   recoveryCase.recoveredAt = new Date();
   recoveryCase.status = "recovered";
   await recoveryCase.save();

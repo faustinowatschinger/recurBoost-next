@@ -67,3 +67,23 @@ export function shouldSendEmail(failureType: FailureType): boolean {
 export function isRetryableFailure(failureType: FailureType): boolean {
   return failureType === "INSUFFICIENT_FUNDS" || failureType === "DO_NOT_HONOR";
 }
+
+/**
+ * Stripe zero-decimal currencies that should NOT be divided by 100.
+ * See: https://docs.stripe.com/currencies#zero-decimal
+ */
+const ZERO_DECIMAL_CURRENCIES = new Set([
+  "bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga",
+  "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf",
+]);
+
+/**
+ * Convert a Stripe amount (smallest currency unit) to a human-readable decimal.
+ * Handles zero-decimal currencies (JPY, KRW, etc.) correctly.
+ */
+export function formatStripeAmount(amount: number, currency: string): number {
+  if (ZERO_DECIMAL_CURRENCIES.has(currency.toLowerCase())) {
+    return amount;
+  }
+  return amount / 100;
+}

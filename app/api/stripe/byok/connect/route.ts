@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { createHash } from "node:crypto";
 import Stripe from "stripe";
 import { auth } from "@/auth";
 import { connectDB } from "@/lib/db/connection";
@@ -55,9 +56,11 @@ export async function POST(request: NextRequest) {
       stripeAccountId = account.id;
     } catch {
       // Restricted keys may not have account read permission.
-      // Use a fallback: the livemode field tells us the key works,
-      // and we store a placeholder account ID.
-      stripeAccountId = balance.livemode ? "acct_live_restricted" : "acct_test_restricted";
+      // Generate a unique deterministic ID from the key so multi-user accounts
+      // are distinguishable even without accounts.retrieve() permission.
+      const keyHash = createHash("sha256").update(apiKey).digest("hex").slice(0, 16);
+      const prefix = balance.livemode ? "acct_live" : "acct_test";
+      stripeAccountId = `${prefix}_rk_${keyHash}`;
     }
   } catch (err) {
     const message = err instanceof Stripe.errors.StripeAuthenticationError
