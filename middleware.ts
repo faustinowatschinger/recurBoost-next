@@ -41,13 +41,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const hasSessionCookie = [
+  const sessionCookiePrefixes = [
     "__Host-authjs.session-token",
     "__Secure-authjs.session-token",
     "authjs.session-token",
     "__Secure-next-auth.session-token",
     "next-auth.session-token",
-  ].some((cookieName) => Boolean(request.cookies.get(cookieName)?.value));
+  ];
+
+  const hasSessionCookie = request.cookies
+    .getAll()
+    .some(({ name }) =>
+      sessionCookiePrefixes.some(
+        (prefix) => name === prefix || name.startsWith(`${prefix}.`)
+      )
+    );
 
   if (!hasSessionCookie) {
     return NextResponse.redirect(new URL("/login", request.url));
