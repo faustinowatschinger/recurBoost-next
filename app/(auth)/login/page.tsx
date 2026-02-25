@@ -1,18 +1,61 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { signIn, useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getProviders, signIn, useSession } from "next-auth/react";
+import { Suspense, useEffect, useState } from "react";
 import posthog from "posthog-js";
 
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  OAuthSignin: "Google sign-in failed. Please try again.",
+  OAuthCallbackError: "Google callback failed. Please try again.",
+  OAuthCreateAccount: "Could not create your account with Google.",
+  OAuthAccountNotLinked:
+    "This email already exists with password login. Use email/password first.",
+  Configuration:
+    "Google login is not configured on the server. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.",
+  AccessDenied: "Access denied.",
+  Callback: "Authentication callback failed.",
+  Verification: "Verification failed. Please sign in again.",
+  default: "Could not sign in. Please try again.",
+};
+
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
+          <p className="text-[var(--foreground)]">Loading...</p>
+        </div>
+      }
+    >
+      <LoginPageContent />
+    </Suspense>
+  );
+}
+
+function LoginPageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { status } = useSession();
-  const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
+  const [googleEnabled, setGoogleEnabled] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const authError = searchParams.get("error");
+  const authErrorMessage = authError
+    ? AUTH_ERROR_MESSAGES[authError] ?? AUTH_ERROR_MESSAGES.default
+    : "";
+  const visibleError = error || authErrorMessage;
+
+  useEffect(() => {
+    async function loadProviders() {
+      const providers = await getProviders();
+      setGoogleEnabled(Boolean(providers?.google));
+    }
+
+    loadProviders().catch(() => setGoogleEnabled(false));
+  }, []);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -49,6 +92,13 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setGoogleLoading(true);
     setError("");
+
+    if (!googleEnabled) {
+      setError(AUTH_ERROR_MESSAGES.Configuration);
+      setGoogleLoading(false);
+      return;
+    }
+
     posthog.capture("user_logged_in_google", { method: "google" });
     await signIn("google", { callbackUrl: "/dashboard" });
     setGoogleLoading(false);
@@ -63,7 +113,11 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">{error}</div>}
+          {visibleError && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
+              {visibleError}
+            </div>
+          )}
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-[var(--foreground)]">

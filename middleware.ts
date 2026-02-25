@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
 import { isMockModeEnabled } from "@/lib/security/runtime";
 
 export async function middleware(request: NextRequest) {
@@ -8,13 +7,15 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
-  const secureCookie = request.nextUrl.protocol === "https:";
-  const token =
-    (await getToken({ req: request, secret, secureCookie })) ||
-    (await getToken({ req: request, secret, secureCookie: !secureCookie }));
+  const hasSessionCookie = [
+    "__Host-authjs.session-token",
+    "__Secure-authjs.session-token",
+    "authjs.session-token",
+    "__Secure-next-auth.session-token",
+    "next-auth.session-token",
+  ].some((cookieName) => Boolean(request.cookies.get(cookieName)?.value));
 
-  if (!token) {
+  if (!hasSessionCookie) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
 
