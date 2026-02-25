@@ -3,7 +3,41 @@ import type { NextRequest } from "next/server";
 import { isMockModeEnabled } from "@/lib/security/runtime";
 
 export async function middleware(request: NextRequest) {
+  const canonicalUrlRaw = process.env.AUTH_URL || process.env.NEXTAUTH_URL;
+
+  if (process.env.NODE_ENV === "production" && canonicalUrlRaw) {
+    try {
+      const canonicalUrl = new URL(canonicalUrlRaw);
+      const requestHost = request.nextUrl.host.toLowerCase();
+      const canonicalHost = canonicalUrl.host.toLowerCase();
+
+      if (requestHost !== canonicalHost) {
+        const redirectUrl = request.nextUrl.clone();
+        redirectUrl.protocol = canonicalUrl.protocol;
+        redirectUrl.host = canonicalUrl.host;
+        return NextResponse.redirect(redirectUrl, 308);
+      }
+    } catch {
+      // Invalid canonical URL: skip host normalization and continue.
+    }
+  }
+
   if (isMockModeEnabled) {
+    return NextResponse.next();
+  }
+
+  const isProtectedPath = [
+    "/dashboard",
+    "/settings",
+    "/onboarding",
+    "/billing",
+  ].some(
+    (path) =>
+      request.nextUrl.pathname === path ||
+      request.nextUrl.pathname.startsWith(`${path}/`)
+  );
+
+  if (!isProtectedPath) {
     return NextResponse.next();
   }
 
@@ -24,6 +58,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
+    "/",
+    "/login",
+    "/register",
+    "/api/auth/:path*",
     "/dashboard/:path*",
     "/settings/:path*",
     "/onboarding/:path*",

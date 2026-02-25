@@ -10,6 +10,7 @@ import { consumeRateLimit, getClientIp } from "@/lib/security/rate-limit";
 const authUrl = process.env.NEXTAUTH_URL || process.env.AUTH_URL || "";
 const isLocalAuthUrl =
   authUrl.includes("localhost") || authUrl.includes("127.0.0.1");
+const authSecret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
 const googleClientId = process.env.GOOGLE_CLIENT_ID;
 const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
@@ -67,6 +68,7 @@ if (googleClientId && googleClientSecret) {
 }
 
 export const authConfig: NextAuthConfig = {
+  secret: authSecret,
   trustHost: process.env.AUTH_TRUST_HOST === "true" || isLocalAuthUrl,
   providers,
   session: { strategy: "jwt" },
