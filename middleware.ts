@@ -8,10 +8,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET,
-  });
+  const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET;
+  const secureCookie = request.nextUrl.protocol === "https:";
+  const token =
+    (await getToken({ req: request, secret, secureCookie })) ||
+    (await getToken({ req: request, secret, secureCookie: !secureCookie }));
 
   if (!token) {
     return NextResponse.redirect(new URL("/login", request.url));
